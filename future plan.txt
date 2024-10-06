@@ -1,0 +1,52 @@
+30/09/2024
+Right now, Luqman is getting his date from yfinance API. the API calls are done 
+as a part of the service layer.
+
+In the future, the API calls will be done in its own API layer. The targets are 
+1. to allow the API layer to be configurable with different API services.
+2. Each API service will have its own strategy to handle the API calls as well as 
+   its own adapter to convert the API response to the domain model.
+   what is domain model?
+   the answer is in the next line.
+3. The domain model is the model that is used in the service layer. It is the model
+    that is used to perform the business logic. The domain model is different from 
+    the API response model. The adapter will convert the API response model to the 
+    domain model.
+4. This also will allow for a repository layer to be created. The repository layer 
+   will be responsible for storing and retrieving the domain model from the database.
+5. Finally this also allows the service layer to be more focused on the business logic and not on the API calls.
+
+So in the future the API architecture will be as follows (Following uncle bob's clean architecture):
+
+flask-clean-architecture/
+│
+├── app/
+│   ├── controller/
+│   │   ├── __init__.py
+│   │   └── stock_controller.py          # Flask routes (exposed API controllers)
+│   │
+│   ├── domain/
+│   │   ├── __init__.py
+│   │   └── stock_model.py          # Domain models (how the business logic entity of a stock should look like regardless of the API response)
+│   │
+│   ├── service/
+│   │   ├── __init__.py
+│   │   └── stock_service.py   # Service layer (business logic)
+│   │
+│   ├── repository/
+│   │   ├── __init__.py
+│   │   └── stock_repository.py # Repository layer (fetching data from yfinance or other APIs)
+│   │
+│   ├── api/         # External APIs strategy (consumed APIs)
+│   │   ├── __init__.py
+│   │   ├── yfinance_api.py    # Yfinance API interaction
+│   │   └── adapters.py        # Adapter to convert API response to domain model
+│   │
+│   ├── config.py              # Configuration settings
+│   └── app.py                 # Flask app setup
+│
+├── tests/                     # Unit and integration tests
+│   └── test_stock.py
+│
+├── requirements.txt           # Python dependencies
+└── app.py                     # Entry point to run the Flask app
