@@ -18,35 +18,20 @@ In the future, the API calls will be done in its own API layer. The targets are
 
 So in the future the API architecture will be as follows (Following uncle bob's clean architecture):
 
-flask-clean-architecture/
-│
+my_stock_app/
 ├── app/
-│   ├── controller/
-│   │   ├── __init__.py
-│   │   └── stock_controller.py          # Flask routes (exposed API controllers)
-│   │
 │   ├── domain/
-│   │   ├── __init__.py
-│   │   └── stock_model.py          # Domain models (how the business logic entity of a stock should look like regardless of the API response)
-│   │
-│   ├── service/
-│   │   ├── __init__.py
-│   │   └── stock_service.py   # Service layer (business logic)
-│   │
-│   ├── repository/
-│   │   ├── __init__.py
-│   │   └── stock_repository.py # Repository layer (fetching data from yfinance or other APIs)
-│   │
-│   ├── api/         # External APIs strategy (consumed APIs)
-│   │   ├── __init__.py
-│   │   ├── yfinance_api.py    # Yfinance API interaction
-│   │   └── adapters.py        # Adapter to convert API response to domain model
-│   │
-│   ├── config.py              # Configuration settings
-│   └── app.py                 # Flask app setup
-│
-├── tests/                     # Unit and integration tests
-│   └── test_stock.py
-│
-├── requirements.txt           # Python dependencies
-└── app.py                     # Entry point to run the Flask app
+│   │   ├── models.py               # Domain Models (Stock, Prediction)
+│   │   ├── repositories.py         # StockRepository Interface
+│   │   └── services.py             # Business Logic (StockService, PredictionService)
+│   ├── adapters/
+│   │   ├── api_adapters/           # API Adapters (yfinance, etc.)
+│   │   ├── db_adapters/            # DB Adapters (mapping domain models to DB models)
+│   │   └── ml_adapter/             # ML Adapter (LSTM Model)
+│   ├── infrastructure/
+│   │   ├── api/controllers/        # Flask Controllers
+│   │   ├── db/                     # DB Models (SQLAlchemy, etc.)
+│   │   ├── ml/                     # ML training and prediction logic
+│   └── config/                     # Configuration
+├── tests/
+└── requirements.txt
