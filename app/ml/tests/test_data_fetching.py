@@ -2,14 +2,10 @@
 import unittest
 import os
 import pandas as pd
-from app.ml.scripts.data_fetching import DataFetcher
+from app.ml.scripts.data_fetch import DataFetcher
 
 
 class TestDataFetcher(unittest.TestCase):
-    """
-    Unit tests for the DataFetcher class.
-    """
-
     @classmethod
     def setUpClass(cls):
         cls.data_fetcher = DataFetcher()
