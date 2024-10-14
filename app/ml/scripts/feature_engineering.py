@@ -3,45 +3,92 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
+# Placeholder imports for feature classes
+from app.ml.scripts.features.technical_indicators import TechnicalIndicators
+from app.ml.scripts.features.sentiment_analyzer import SentimentAnalyzer
+from app.ml.scripts.features.macro_economic_analyzer import MacroEconomicAnalyzer
+from app.ml.scripts.features.fundamental_analyzer import FundamentalAnalyzer
+from app.ml.scripts.features.technical_sentiment_indicators import (
+    TechnicalSentimentIndicators,
+)
+
 
 class FeatureEngineer:
     """
     A class to handle feature engineering for stock data, including adding technical indicators,
     normalizing data, preparing sequences for LSTM models, and handling outliers.
+
+    Documentation:
+
+    The feature engineering process began with the goal of enriching our dataset for LSTM model training by adding
+    relevant indicators and features that would help capture various aspects of market behavior. Initially, we focused
+    on adding technical indicators such as Moving Averages, RSI, Bollinger Bands, and MACD. These indicators provide
+    insights into trends, momentum, and volatility, which are crucial for short-term price action.
+
+    As we progressed, we realized that there are multiple types of features that could be beneficial for our model,
+    each providing unique perspectives on the market and company-specific behaviors. We identified the following
+    types of features:
+
+    1. Technical Indicators: Traditional price-based indicators that help understand price trends, volatility, and
+       momentum.
+    2. Sentiment Analysis Feature: Derived from social media, news articles, and other public sources to gauge
+       market sentiment about a stock or sector.
+    3. Macro-Economic Analysis Feature: Broader economic indicators such as interest rates, inflation, and GDP,
+       providing context on the overall economic environment.
+    4. Fundamental Analysis Feature: Focuses on the financial health of the company, including metrics like P/E
+       ratio, Debt-to-Equity, and other financial ratios.
+    5. Technical Sentiment Indicators: Metrics like the Volatility Index (VIX) and Put-Call Ratio, which reflect
+       overall market sentiment and expectations of future volatility.
+
+    To ensure modularity, scalability, and clean integration, we decided to create separate classes for each type of
+    feature. Each feature class will be responsible for fetching, analyzing, and normalizing its respective data, and
+    the output of each will be combined into the main dataset. This approach ensures that each feature type can be
+    maintained independently and reused as needed.
+
+    The `FeatureEngineer` class will serve as the central integration point, calling on each feature class and
+    adding their output to the main dataset. This allows us to add more features in the future or modify existing
+    ones without affecting the overall system architecture.
+
+    Moving forward, we also plan to implement manual feature scaling and attention mechanisms to dynamically
+    emphasize specific features during model training. This will help the LSTM model better understand which
+    features are most important in different market conditions.
     """
 
     def __init__(self, data: pd.DataFrame):
         self.data = data
         self.scaler = MinMaxScaler(feature_range=(0, 1))
 
-    def add_technical_indicators(self):
+    def integrate_all_features(self):
         """
-        Add technical indicators to the stock data, such as Moving Average, RSI, and Bollinger Bands.
+        Integrate all feature classes (technical indicators, sentiment analysis, etc.)
         """
-        # Moving Averages
-        self.data["MA_10"] = self.data["Close"].rolling(window=10).mean()
-        self.data["MA_50"] = self.data["Close"].rolling(window=50).mean()
+        # Technical Indicators
+        technical_indicators = TechnicalIndicators(self.data)
+        self.data = technical_indicators.add_indicators()
 
-        # Relative Strength Index (RSI)
-        delta = self.data["Close"].diff(1)
-        gain = delta.where(delta > 0, 0)
-        loss = -delta.where(delta < 0, 0)
-        avg_gain = gain.rolling(window=14).mean()
-        avg_loss = loss.rolling(window=14).mean()
-        rs = avg_gain / avg_loss
-        self.data["RSI"] = 100 - (100 / (1 + rs))
+        # Sentiment Analysis
+        sentiment_analyzer = SentimentAnalyzer()
+        sentiment_data = sentiment_analyzer.get_sentiment_data()
+        self.data = self.data.join(sentiment_data, how="left")  # Join sentiment data
 
-        # Bollinger Bands
-        self.data["BB_MA"] = self.data["Close"].rolling(window=20).mean()
-        self.data["BB_std"] = self.data["Close"].rolling(window=20).std()
-        self.data["BB_upper"] = self.data["BB_MA"] + (self.data["BB_std"] * 2)
-        self.data["BB_lower"] = self.data["BB_MA"] - (self.data["BB_std"] * 2)
+        # Macro-Economic Analysis
+        macro_analyzer = MacroEconomicAnalyzer()
+        macro_data = macro_analyzer.get_macro_data()
+        self.data = self.data.join(macro_data, how="left")  # Join macro-economic data
 
-        # Moving Average Convergence Divergence (MACD)
-        self.data["EMA_12"] = self.data["Close"].ewm(span=12, adjust=False).mean()
-        self.data["EMA_26"] = self.data["Close"].ewm(span=26, adjust=False).mean()
-        self.data["MACD"] = self.data["EMA_12"] - self.data["EMA_26"]
-        self.data["Signal_Line"] = self.data["MACD"].ewm(span=9, adjust=False).mean()
+        # Fundamental Analysis
+        fundamental_analyzer = FundamentalAnalyzer()
+        fundamental_data = fundamental_analyzer.get_fundamental_data()
+        self.data = self.data.join(
+            fundamental_data, how="left"
+        )  # Join fundamental data
+
+        # Technical Sentiment Indicators
+        technical_sentiment = TechnicalSentimentIndicators()
+        sentiment_indicators_data = technical_sentiment.get_sentiment_indicators()
+        self.data = self.data.join(
+            sentiment_indicators_data, how="left"
+        )  # Join technical sentiment data
 
         return self
 
@@ -75,23 +122,10 @@ class FeatureEngineer:
         """
         Normalize the data using Min-Max scaling.
         """
-        columns_to_scale = [
-            "Open",
-            "High",
-            "Low",
-            "Close",
-            "Volume",
-            "MA_10",
-            "MA_50",
-            "RSI",
-            "BB_MA",
-            "BB_upper",
-            "BB_lower",
-            "MACD",
-            "Signal_Line",
-        ]
-        self.data[columns_to_scale] = self.scaler.fit_transform(
-            self.data[columns_to_scale]
+        self.data = pd.DataFrame(
+            self.scaler.fit_transform(self.data),
+            columns=self.data.columns,
+            index=self.data.index,
         )
         return self
 
@@ -118,6 +152,6 @@ if __name__ == "__main__":
         "app/ml/data/AAPL/AAPL_1d_5y.csv", index_col="Date", parse_dates=True
     )
     feature_engineer = FeatureEngineer(data)
-    feature_engineer.add_technical_indicators().handle_outliers().handle_missing_values().normalize_data()
+    feature_engineer.integrate_all_features().handle_outliers().handle_missing_values().normalize_data()
     sequences, targets = feature_engineer.create_sequences()
     print(f"Sequences shape: {sequences.shape}, Targets shape: {targets.shape}")
