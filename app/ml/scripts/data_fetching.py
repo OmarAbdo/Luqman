@@ -1,332 +1,110 @@
-# scripts/features/fundamental_analysis.py
+# scripts/data_fetch.py
 import yfinance as yf
 import pandas as pd
-import requests
-import json
+import time
+import os
+from datetime import datetime, timedelta
 
 
-class FundamentalAnalysis:
+class DataFetcher:
     """
-    A class to perform fundamental analysis by fetching financial metrics from data sources such as Yahoo Finance
-    and performing custom calculations if necessary.
+    A class responsible for fetching stock, competitor, and market index data
+    for LSTM model training and technical analysis, following SOLID principles.
+
+    The DataFetcher class is currently designed to work with yfinance, which is known to have limitations in terms of data availability, especially for short-term, high-frequency data. Despite its limitations, we chose yfinance because it provides easy access to historical financial data with minimal setup, which allows us to rapidly iterate during the early stages of development. This decision enables us to focus on prototyping the core functionalities, while acknowledging that yfinance may be replaced in the future by a more reliable data provider.
+
+    Our approach includes a "3D analysis," which refers to the combination of multiple time intervals (15 minutes, 1 hour, and daily) for capturing short-term and longer-term market trends. This method is intended to provide a comprehensive perspective for short-term, low-risk trading. The goal is to understand not only the price movement of individual stocks but also how they behave in the context of their sector and broader market indices.
+
+    During this phase, we are using yfinance's existing options for data retrieval. For the 15-minute interval, the API supports a maximum period of 1 month, which is a limitation for the desired 60-day data. In the future, we plan to implement a workaround that involves fetching the current 1-month data and combining it with data from the previous month, effectively constructing a 2-month dataset.
+
+    Additionally, the long-term plan involves building a more scalable architecture, including replacing yfinance with multiple data sources and building adapters to handle those APIs, aligning with clean architecture principles. These adapters will help convert various API responses to our internal domain models, providing flexibility and reliability. This approach will also ensure that the system can handle changes in data providers seamlessly, allowing for better fault tolerance and reduced downtime.
+
+    The unit tests under app/ml/tests ensure the reliability of our data fetching, storage, and handling. These tests also serve as documentation of expected behavior and provide confidence in future refactoring efforts.
     """
+
+    FETCH_INTERVAL = 15  # Frequency to fetch data (in minutes)
+    TECH_SECTOR_ETF = "XLK"  # Technology Select Sector SPDR Fund
+    TARGET_TICKER = "AAPL"  # Main target ticker for analysis
+    COMPETITORS = ["MSFT", "GOOG", "AMZN"]  # Competitor tickers for analysis
+    MARKET_INDEXES = ["^GSPC", "^IXIC"]  # Major market index tickers
+    HOURLY_LIMIT_PERIOD = "2y"  # Limit for hourly data fetching (maximum period)
+    # [TODO] Period '60d' is invalid, must be one of ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max']
+    # [TODO] however, the api can fetch data for 60 days, even though there's no '60d' or 2mo options
+    # [TODO] so we need to find a work around to fetch the current 1mo and then the data of the previous month to get the 2mo data
+    MINUTE_LIMIT_PERIOD = "1mo"  # Limit for 15-minute data fetching (maximum period)
 
     def __init__(self):
-        self.ticker = "AAPL"
-        self.data = None
-        self.financial_data = {}
-        self.data_path = "app/ml/data/AAPL"
-        self.alpha_vantage_api_key = (
-            "YOUR_ALPHA_VANTAGE_API_KEY"  # Replace with your actual API key
-        )
+        self.base_data_path = os.path.join("app/ml/data/", self.TARGET_TICKER)
+        self.ensure_directories_exist()
 
-    def fetch_yahoo_financials(self):
+    def ensure_directories_exist(self):
         """
-        Fetch financial data from Yahoo Finance, including income statement, balance sheet, and cash flow.
+        Ensure the necessary directories exist for storing data.
         """
-        stock = yf.Ticker(self.ticker)
-        self.financial_data["income_statement"] = stock.financials
-        self.financial_data["balance_sheet"] = stock.balance_sheet
-        self.financial_data["cash_flow"] = stock.cashflow
-        self.financial_data["summary"] = stock.info
-        print("Fetched Financial Data:")
-        print(self.financial_data)
-        with open(f"{self.data_path}/fetched_financial_data.txt", "w") as file:
-            file.write(str(self.financial_data))
-            print("financial data saved to fetched_financial_data.txt")
-        return self.financial_data
+        if not os.path.exists(self.base_data_path):
+            os.makedirs(self.base_data_path)
 
-    def calculate_valuation_ratios(self, summary):
+    def fetch_stock_data(self, ticker, period="max", interval="1d"):
         """
-        Calculate valuation ratios such as P/E, P/B, EV/EBITDA, and PEG Ratio.
+        Fetches data for a given ticker symbol, at a specified interval.
         """
-        self.financial_data["P/E"] = summary.get("trailingPE", None)
-        self.financial_data["P/B"] = summary.get("priceToBook", None)
-        self.financial_data["EV/EBITDA"] = summary.get("enterpriseToEbitda", None)
-        self.financial_data["PEG Ratio"] = summary.get("pegRatio", None)
-
-    def calculate_profitability_ratios(self, income_statement, balance_sheet):
-        """
-        Calculate profitability ratios such as ROE, ROA, Gross Margin, and Net Profit Margin.
-        """
-        net_income = (
-            income_statement.loc["Net Income"].iloc[0]
-            if "Net Income" in income_statement.index
-            else None
-        )
-        total_equity = (
-            balance_sheet.loc["Total Stockholder Equity"].iloc[0]
-            if "Total Stockholder Equity" in balance_sheet.index
-            else None
-        )
-        total_assets = (
-            balance_sheet.loc["Total Assets"].iloc[0]
-            if "Total Assets" in balance_sheet.index
-            else None
-        )
-        gross_profit = (
-            income_statement.loc["Gross Profit"].iloc[0]
-            if "Gross Profit" in income_statement.index
-            else None
-        )
-        revenue = (
-            income_statement.loc["Total Revenue"].iloc[0]
-            if "Total Revenue" in income_statement.index
-            else None
-        )
-
-        self.financial_data["ROE"] = (
-            net_income / total_equity if total_equity and total_equity != 0 else None
-        )
-        self.financial_data["ROA"] = (
-            net_income / total_assets if total_assets and total_assets != 0 else None
-        )
-        self.financial_data["Gross Margin"] = (
-            gross_profit / revenue if revenue and revenue != 0 else None
-        )
-        self.financial_data["Net Profit Margin"] = (
-            net_income / revenue if revenue and revenue != 0 else None
-        )
-
-    def calculate_leverage_ratios(self, income_statement, balance_sheet):
-        """
-        Calculate leverage ratios such as Debt-to-Equity and Interest Coverage Ratio.
-        """
-        total_liabilities = (
-            balance_sheet.loc["Total Liab"].iloc[0]
-            if "Total Liab" in balance_sheet.index
-            else None
-        )
-        interest_expense = (
-            income_statement.loc["Interest Expense"].iloc[0]
-            if "Interest Expense" in income_statement.index
-            else None
-        )
-        ebit = (
-            income_statement.loc["Ebit"].iloc[0]
-            if "Ebit" in income_statement.index
-            else None
-        )
-
-        total_equity = (
-            balance_sheet.loc["Total Stockholder Equity"].iloc[0]
-            if "Total Stockholder Equity" in balance_sheet.index
-            else None
-        )
-        self.financial_data["Debt-to-Equity"] = (
-            total_liabilities / total_equity
-            if total_equity and total_equity != 0
-            else None
-        )
-        self.financial_data["Interest Coverage Ratio"] = (
-            ebit / interest_expense
-            if ebit is not None
-            and interest_expense is not None
-            and interest_expense != 0
-            else None
-        )
-
-    def calculate_liquidity_ratios(self, balance_sheet):
-        """
-        Calculate liquidity ratios such as Current Ratio and Quick Ratio.
-        """
-        current_assets = (
-            balance_sheet.loc["Total Current Assets"].iloc[0]
-            if "Total Current Assets" in balance_sheet.index
-            else None
-        )
-        current_liabilities = (
-            balance_sheet.loc["Total Current Liabilities"].iloc[0]
-            if "Total Current Liabilities" in balance_sheet.index
-            else None
-        )
-
-        self.financial_data["Current Ratio"] = (
-            current_assets / current_liabilities
-            if current_liabilities and current_liabilities != 0
-            else None
-        )
-        self.financial_data["Quick Ratio"] = (
-            (current_assets - balance_sheet.loc["Inventory"].iloc[0])
-            / current_liabilities
-            if current_liabilities
-            and current_liabilities != 0
-            and "Inventory" in balance_sheet.index
-            else None
-        )
-
-    def calculate_growth_metrics(self, income_statement):
-        """
-        Calculate growth metrics such as Revenue Growth and Earnings Growth.
-        """
-        revenue = (
-            income_statement.loc["Total Revenue"].iloc[0]
-            if "Total Revenue" in income_statement.index
-            else None
-        )
-        previous_revenue = (
-            income_statement.loc["Total Revenue"].iloc[1]
-            if "Total Revenue" in income_statement.index
-            and len(income_statement.loc["Total Revenue"]) > 1
-            else None
-        )
-        net_income = (
-            income_statement.loc["Net Income"].iloc[0]
-            if "Net Income" in income_statement.index
-            else None
-        )
-        previous_net_income = (
-            income_statement.loc["Net Income"].iloc[1]
-            if "Net Income" in income_statement.index
-            and len(income_statement.loc["Net Income"]) > 1
-            else None
-        )
-
-        self.financial_data["Revenue Growth"] = (
-            ((revenue - previous_revenue) / previous_revenue)
-            if previous_revenue
-            else None
-        )
-        self.financial_data["Earnings Growth"] = (
-            ((net_income - previous_net_income) / previous_net_income)
-            if previous_net_income
-            else None
-        )
-
-    def calculate_cash_flow_metrics(self, cash_flow):
-        """
-        Calculate cash flow metrics such as Operating Cash Flow and Free Cash Flow.
-        """
-        operating_cash_flow = (
-            cash_flow.loc["Total Cash From Operating Activities"].iloc[0]
-            if "Total Cash From Operating Activities" in cash_flow.index
-            else None
-        )
-        capex = (
-            cash_flow.loc["Capital Expenditures"].iloc[0]
-            if "Capital Expenditures" in cash_flow.index
-            else 0
-        )
-
-        self.financial_data["Operating Cash Flow"] = operating_cash_flow
-        self.financial_data["Free Cash Flow"] = (
-            operating_cash_flow - capex if capex else None
-        )
-
-    def calculate_ratios(self):
-        """
-        Calculate all fundamental ratios by calling individual methods for each category.
-        """
-        income_statement = self.financial_data.get("income_statement")
-        balance_sheet = self.financial_data.get("balance_sheet")
-        cash_flow = self.financial_data.get("cash_flow")
-        summary = self.financial_data.get("summary")
-        if (
-            income_statement is None
-            or balance_sheet is None
-            or cash_flow is None
-            or summary is None
-        ):
-            raise ValueError(
-                "Financial data is incomplete. Make sure to fetch financial data first."
-            )
-
+        stock = yf.Ticker(ticker)
         try:
-            self.calculate_valuation_ratios(summary)
-            self.calculate_profitability_ratios(income_statement, balance_sheet)
-            self.calculate_leverage_ratios(income_statement, balance_sheet)
-            self.calculate_liquidity_ratios(balance_sheet)
-            self.calculate_growth_metrics(income_statement)
-            self.calculate_cash_flow_metrics(cash_flow)
+            data = stock.history(period=period, interval=interval)
+            print(f"Fetched data for {ticker} - Interval: {interval}, Period: {period}")
+            return data
+        except Exception as e:
+            print(f"Error fetching data for {ticker}: {str(e)}")
+            return pd.DataFrame()
 
-        except KeyError as e:
-            print(f"KeyError while calculating ratios: {e}")
-            # Set missing financial data to None
-            for key in [
-                "P/E",
-                "P/B",
-                "EV/EBITDA",
-                "PEG Ratio",
-                "ROE",
-                "ROA",
-                "Gross Margin",
-                "Net Profit Margin",
-                "Debt-to-Equity",
-                "Interest Coverage Ratio",
-                "Current Ratio",
-                "Quick Ratio",
-                "Revenue Growth",
-                "Earnings Growth",
-                "Operating Cash Flow",
-                "Free Cash Flow",
-            ]:
-                if key not in self.financial_data:
-                    self.financial_data[key] = None
-
-        with open(f"{self.data_path}/calculated_ratios.txt", "w") as file:
-            file.write(str(self.financial_data))
-            print("financial data saved to calculated_ratios.txt")
-
-        return self.financial_data
-
-    def fill_gaps_with_alpha_vantage(self):
+    def save_data_to_csv(self, data, filename):
         """
-        Fetch data from Alpha Vantage in case metrics are missing.
+        Saves the fetched data to a CSV file.
         """
-        base_url = "https://www.alphavantage.co/query"
-        functions = {
-            "income_statement": "INCOME_STATEMENT",
-            "balance_sheet": "BALANCE_SHEET",
-            "cash_flow": "CASH_FLOW",
-        }
+        if not data.empty:
+            file_path = os.path.join(self.base_data_path, f"{filename}.csv")
+            data.to_csv(file_path, index=True)
+            print(f"Saved {file_path}")
+        else:
+            print(f"No data available to save for {filename}")
 
-        for key, function in functions.items():
-            if key not in self.financial_data or not self.financial_data[key]:
-                params = {
-                    "function": function,
-                    "symbol": self.ticker,
-                    "apikey": self.alpha_vantage_api_key,
-                }
-                response = requests.get(base_url, params=params)
-                if response.status_code == 200:
-                    self.financial_data[key] = response.json()
-                else:
-                    print(
-                        f"Failed to fetch {key} from Alpha Vantage. Status code: {response.status_code}"
-                    )
+    def fetch_target_stock_data(self):
+        """
+        Fetches data for the main target stock (AAPL) for different timeframes.
+        """
+        intervals = [
+            ("15m", self.MINUTE_LIMIT_PERIOD),  # 15-minute interval for last 1 month
+            ("1h", self.HOURLY_LIMIT_PERIOD),  # Hourly interval for last 2 years
+            ("1d", "5y"),  # Daily interval for 5 years
+        ]
 
-    def get_fundamental_metrics(self):
+        for interval, period in intervals:
+            print(f"Fetching {interval} data for {self.TARGET_TICKER}...")
+            data = self.fetch_stock_data(
+                self.TARGET_TICKER, period=period, interval=interval
+            )
+            self.save_data_to_csv(data, f"{self.TARGET_TICKER}_{interval}_{period}")
+            time.sleep(1)  # Avoid rate limiting
+
+    def fetch_sector_and_market_data(self):
         """
-        Combine all fetched data and calculated metrics into a unified dataframe.
+        Fetches data for competitors, sector ETFs, and market indices.
         """
-        metrics = {
-            "Ticker": self.ticker,
-            "P/E": self.financial_data.get("P/E"),
-            "P/B": self.financial_data.get("P/B"),
-            "EV/EBITDA": self.financial_data.get("EV/EBITDA"),
-            "PEG Ratio": self.financial_data.get("PEG Ratio"),
-            "ROE": self.financial_data.get("ROE"),
-            "ROA": self.financial_data.get("ROA"),
-            "Gross Margin": self.financial_data.get("Gross Margin"),
-            "Net Profit Margin": self.financial_data.get("Net Profit Margin"),
-            "Debt-to-Equity": self.financial_data.get("Debt-to-Equity"),
-            "Interest Coverage Ratio": self.financial_data.get(
-                "Interest Coverage Ratio"
-            ),
-            "Current Ratio": self.financial_data.get("Current Ratio"),
-            "Quick Ratio": self.financial_data.get("Quick Ratio"),
-            "Revenue Growth": self.financial_data.get("Revenue Growth"),
-            "Earnings Growth": self.financial_data.get("Earnings Growth"),
-            "Operating Cash Flow": self.financial_data.get("Operating Cash Flow"),
-            "Free Cash Flow": self.financial_data.get("Free Cash Flow"),
-        }
-        return pd.DataFrame([metrics])
+        all_tickers = self.COMPETITORS + [self.TECH_SECTOR_ETF] + self.MARKET_INDEXES
+        for ticker in all_tickers:
+            print(f"Fetching daily data for {ticker}...")
+            data = self.fetch_stock_data(ticker, period="5y", interval="1d")
+            self.save_data_to_csv(data, f"{ticker}_5y_1d")
+            time.sleep(1)  # Avoid rate limiting
+
+    def fetch_all_data(self):
+        """
+        Fetches all required data for analysis and stores it as CSV files.
+        """
+        self.fetch_target_stock_data()
+        self.fetch_sector_and_market_data()
 
 
 if __name__ == "__main__":
-    fundamental_analysis = FundamentalAnalysis()
-    fetched_data = fundamental_analysis.fetch_yahoo_financials()
-    fundamental_analysis.fill_gaps_with_alpha_vantage()
-    calculated_data = fundamental_analysis.calculate_ratios()
-    # print("Calculated Financial Ratios:")
-    # print(calculated_data)
+    data_fetcher = DataFetcher()
+    data_fetcher.fetch_all_data()
