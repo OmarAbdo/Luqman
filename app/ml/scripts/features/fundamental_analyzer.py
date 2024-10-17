@@ -9,10 +9,11 @@ class FundamentalAnalysis:
     and performing custom calculations if necessary.
     """
 
-    def __init__(self, ticker: str):
-        self.ticker = ticker
+    def __init__(self):
+        self.ticker = "AAPL"
         self.data = None
         self.financial_data = {}
+        self.data_path = "app/ml/data/AAPL"
 
     def fetch_yahoo_financials(self):
         """
@@ -23,11 +24,194 @@ class FundamentalAnalysis:
         self.financial_data["balance_sheet"] = stock.balance_sheet
         self.financial_data["cash_flow"] = stock.cashflow
         self.financial_data["summary"] = stock.info
+        print("Fetched Financial Data:")
+        # print(self.financial_data)
+        
+        with open(f"{self.data_path}/fetched_financial_data.txt", "w") as file:
+            file.write(str(self.financial_data))
+            print("financial data saved to fetched_financial_data.txt")
         return self.financial_data
+
+    def calculate_valuation_ratios(self, summary):
+        """
+        Calculate valuation ratios such as P/E, P/B, EV/EBITDA, and PEG Ratio.
+        """
+        self.financial_data["P/E"] = summary.get("trailingPE", None)
+        self.financial_data["P/B"] = summary.get("priceToBook", None)
+        self.financial_data["EV/EBITDA"] = summary.get("enterpriseToEbitda", None)
+        self.financial_data["PEG Ratio"] = summary.get("pegRatio", None)
+
+    def calculate_profitability_ratios(self, income_statement, balance_sheet):
+        """
+        Calculate profitability ratios such as ROE, ROA, Gross Margin, and Net Profit Margin.
+        """
+        net_income = (
+            income_statement.loc["Net Income"].iloc[0]
+            if "Net Income" in income_statement.index
+            else None
+        )
+        total_equity = (
+            balance_sheet.loc["Total Stockholder Equity"].iloc[0]
+            if "Total Stockholder Equity" in balance_sheet.index
+            else None
+        )
+        total_assets = (
+            balance_sheet.loc["Total Assets"].iloc[0]
+            if "Total Assets" in balance_sheet.index
+            else None
+        )
+        gross_profit = (
+            income_statement.loc["Gross Profit"].iloc[0]
+            if "Gross Profit" in income_statement.index
+            else None
+        )
+        revenue = (
+            income_statement.loc["Total Revenue"].iloc[0]
+            if "Total Revenue" in income_statement.index
+            else None
+        )
+
+        self.financial_data["ROE"] = (
+            net_income / total_equity if total_equity and total_equity != 0 else None
+        )
+        self.financial_data["ROA"] = (
+            net_income / total_assets if total_assets and total_assets != 0 else None
+        )
+        self.financial_data["Gross Margin"] = (
+            gross_profit / revenue if revenue and revenue != 0 else None
+        )
+        self.financial_data["Net Profit Margin"] = (
+            net_income / revenue if revenue and revenue != 0 else None
+        )
+
+    def calculate_leverage_ratios(self, income_statement, balance_sheet):
+        """
+        Calculate leverage ratios such as Debt-to-Equity and Interest Coverage Ratio.
+        """
+        total_liabilities = (
+            balance_sheet.loc["Total Liab"].iloc[0]
+            if "Total Liab" in balance_sheet.index
+            else None
+        )
+        interest_expense = (
+            income_statement.loc["Interest Expense"].iloc[0]
+            if "Interest Expense" in income_statement.index
+            else None
+        )
+        ebit = (
+            income_statement.loc["Ebit"].iloc[0]
+            if "Ebit" in income_statement.index
+            else None
+        )
+
+        total_equity = (
+            balance_sheet.loc["Total Stockholder Equity"].iloc[0]
+            if "Total Stockholder Equity" in balance_sheet.index
+            else None
+        )
+        self.financial_data["Debt-to-Equity"] = (
+            total_liabilities / total_equity
+            if total_equity and total_equity != 0
+            else None
+        )
+        self.financial_data["Interest Coverage Ratio"] = (
+            ebit / interest_expense
+            if ebit is not None
+            and interest_expense is not None
+            and interest_expense != 0
+            else None
+        )
+
+    def calculate_liquidity_ratios(self, balance_sheet):
+        """
+        Calculate liquidity ratios such as Current Ratio and Quick Ratio.
+        """
+        current_assets = (
+            balance_sheet.loc["Total Current Assets"].iloc[0]
+            if "Total Current Assets" in balance_sheet.index
+            else None
+        )
+        current_liabilities = (
+            balance_sheet.loc["Total Current Liabilities"].iloc[0]
+            if "Total Current Liabilities" in balance_sheet.index
+            else None
+        )
+
+        self.financial_data["Current Ratio"] = (
+            current_assets / current_liabilities
+            if current_liabilities and current_liabilities != 0
+            else None
+        )
+        self.financial_data["Quick Ratio"] = (
+            (current_assets - balance_sheet.loc["Inventory"].iloc[0])
+            / current_liabilities
+            if current_liabilities
+            and current_liabilities != 0
+            and "Inventory" in balance_sheet.index
+            else None
+        )
+
+    def calculate_growth_metrics(self, income_statement):
+        """
+        Calculate growth metrics such as Revenue Growth and Earnings Growth.
+        """
+        revenue = (
+            income_statement.loc["Total Revenue"].iloc[0]
+            if "Total Revenue" in income_statement.index
+            else None
+        )
+        previous_revenue = (
+            income_statement.loc["Total Revenue"].iloc[1]
+            if "Total Revenue" in income_statement.index
+            and len(income_statement.loc["Total Revenue"]) > 1
+            else None
+        )
+        net_income = (
+            income_statement.loc["Net Income"].iloc[0]
+            if "Net Income" in income_statement.index
+            else None
+        )
+        previous_net_income = (
+            income_statement.loc["Net Income"].iloc[1]
+            if "Net Income" in income_statement.index
+            and len(income_statement.loc["Net Income"]) > 1
+            else None
+        )
+
+        self.financial_data["Revenue Growth"] = (
+            ((revenue - previous_revenue) / previous_revenue)
+            if previous_revenue
+            else None
+        )
+        self.financial_data["Earnings Growth"] = (
+            ((net_income - previous_net_income) / previous_net_income)
+            if previous_net_income
+            else None
+        )
+
+    def calculate_cash_flow_metrics(self, cash_flow):
+        """
+        Calculate cash flow metrics such as Operating Cash Flow and Free Cash Flow.
+        """
+        operating_cash_flow = (
+            cash_flow.loc["Total Cash From Operating Activities"].iloc[0]
+            if "Total Cash From Operating Activities" in cash_flow.index
+            else None
+        )
+        capex = (
+            cash_flow.loc["Capital Expenditures"].iloc[0]
+            if "Capital Expenditures" in cash_flow.index
+            else 0
+        )
+
+        self.financial_data["Operating Cash Flow"] = operating_cash_flow
+        self.financial_data["Free Cash Flow"] = (
+            operating_cash_flow - capex if capex else None
+        )
 
     def calculate_ratios(self):
         """
-        Calculate fundamental ratios like P/E, P/B, ROE, etc. from the financial statements.
+        Calculate all fundamental ratios by calling individual methods for each category.
         """
         income_statement = self.financial_data.get("income_statement")
         balance_sheet = self.financial_data.get("balance_sheet")
@@ -44,95 +228,12 @@ class FundamentalAnalysis:
             )
 
         try:
-            # Valuation Ratios
-            self.financial_data["P/E"] = summary.get("trailingPE", None)
-            self.financial_data["P/B"] = summary.get("priceToBook", None)
-            self.financial_data["EV/EBITDA"] = summary.get("enterpriseToEbitda", None)
-            self.financial_data["PEG Ratio"] = summary.get("pegRatio", None)
-
-            # Profitability Ratios
-            net_income = income_statement.loc["Net Income"][0]
-            total_equity = balance_sheet.loc["Total Stockholder Equity"][0]
-            total_assets = balance_sheet.loc["Total Assets"][0]
-            gross_profit = income_statement.loc["Gross Profit"][0]
-            revenue = income_statement.loc["Total Revenue"][0]
-
-            self.financial_data["ROE"] = (
-                net_income / total_equity if total_equity != 0 else None
-            )
-            self.financial_data["ROA"] = (
-                net_income / total_assets if total_assets != 0 else None
-            )
-            self.financial_data["Gross Margin"] = (
-                gross_profit / revenue if revenue != 0 else None
-            )
-            self.financial_data["Net Profit Margin"] = (
-                net_income / revenue if revenue != 0 else None
-            )
-
-            # Leverage Ratios
-            total_liabilities = balance_sheet.loc["Total Liab"][0]
-            interest_expense = income_statement.loc.get("Interest Expense", [None])[0]
-            ebit = income_statement.loc["Ebit"][0]
-
-            self.financial_data["Debt-to-Equity"] = (
-                total_liabilities / total_equity if total_equity != 0 else None
-            )
-            self.financial_data["Interest Coverage Ratio"] = (
-                ebit / interest_expense
-                if interest_expense and interest_expense != 0
-                else None
-            )
-
-            # Liquidity Ratios
-            current_assets = balance_sheet.loc["Total Current Assets"][0]
-            current_liabilities = balance_sheet.loc["Total Current Liabilities"][0]
-
-            self.financial_data["Current Ratio"] = (
-                current_assets / current_liabilities
-                if current_liabilities != 0
-                else None
-            )
-            self.financial_data["Quick Ratio"] = (
-                (current_assets - balance_sheet.loc["Inventory"][0])
-                / current_liabilities
-                if current_liabilities != 0
-                else None
-            )
-
-            # Growth Metrics
-            previous_revenue = (
-                income_statement.loc["Total Revenue"][1]
-                if len(income_statement.loc["Total Revenue"]) > 1
-                else None
-            )
-            previous_net_income = (
-                income_statement.loc["Net Income"][1]
-                if len(income_statement.loc["Net Income"]) > 1
-                else None
-            )
-
-            self.financial_data["Revenue Growth"] = (
-                ((revenue - previous_revenue) / previous_revenue)
-                if previous_revenue
-                else None
-            )
-            self.financial_data["Earnings Growth"] = (
-                ((net_income - previous_net_income) / previous_net_income)
-                if previous_net_income
-                else None
-            )
-
-            # Cash Flow Metrics
-            operating_cash_flow = cash_flow.loc["Total Cash From Operating Activities"][
-                0
-            ]
-            capex = cash_flow.loc.get("Capital Expenditures", [0])[0]
-
-            self.financial_data["Operating Cash Flow"] = operating_cash_flow
-            self.financial_data["Free Cash Flow"] = (
-                operating_cash_flow - capex if capex else None
-            )
+            self.calculate_valuation_ratios(summary)
+            self.calculate_profitability_ratios(income_statement, balance_sheet)
+            self.calculate_leverage_ratios(income_statement, balance_sheet)
+            self.calculate_liquidity_ratios(balance_sheet)
+            self.calculate_growth_metrics(income_statement)
+            self.calculate_cash_flow_metrics(cash_flow)
 
         except KeyError as e:
             print(f"KeyError while calculating ratios: {e}")
@@ -157,6 +258,10 @@ class FundamentalAnalysis:
             ]:
                 if key not in self.financial_data:
                     self.financial_data[key] = None
+
+        with open(f"{self.data_path}/calculated_ratios.txt", "w") as file:
+            file.write(str(self.financial_data))
+            print("calculated ratios saved to calculated_ratios.txt")
 
         return self.financial_data
 
@@ -196,10 +301,8 @@ class FundamentalAnalysis:
 
 
 if __name__ == "__main__":
-    # Example usage
-    ticker_symbol = "AAPL"
-    fundamental_analysis = FundamentalAnalysis(ticker_symbol)
-    financial_data = fundamental_analysis.fetch_yahoo_financials()
+    fundamental_analysis = FundamentalAnalysis()
+    fetched_data = fundamental_analysis.fetch_yahoo_financials()
     calculated_data = fundamental_analysis.calculate_ratios()
-    metrics = fundamental_analysis.get_fundamental_metrics()
-    print(metrics)
+    # print("Calculated Financial Ratios:")
+    # print(calculated_data)
