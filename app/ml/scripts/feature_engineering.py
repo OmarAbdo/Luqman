@@ -7,7 +7,7 @@ from sklearn.preprocessing import MinMaxScaler
 from app.ml.scripts.features.technical_indicators import TechnicalIndicators
 from app.ml.scripts.features.sentiment_analyzer import SentimentAnalyzer
 from app.ml.scripts.features.macro_economic_analyzer import MacroEconomicAnalyzer
-from app.ml.scripts.features.fundamental_analyzer import FundamentalAnalyzer
+from app.ml.scripts.features.fundamental_analysis.fundamental_analyzer import FundamentalAnalyzer
 from app.ml.scripts.features.technical_sentiment_indicators import (
     TechnicalSentimentIndicators,
 )
