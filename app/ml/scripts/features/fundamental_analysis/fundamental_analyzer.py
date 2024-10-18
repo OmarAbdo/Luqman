@@ -27,6 +27,38 @@ class FundamentalAnalysis:
     """
     A class to perform fundamental analysis by fetching financial metrics from data sources such as Yahoo Finance
     and performing custom calculations if necessary.
+    
+    ## Overview of Workflow
+    1. **Data Fetching**:
+    - Initially, financial data is fetched from Yahoo Finance, using the `fetch_yahoo_financials()` method.
+    - Missing or incomplete data points are then filled by using Alpha Vantage API, which we implemented in the `fill_gaps_with_alpha_vantage()` method.
+
+    2. **Financial Ratios and Metrics Calculation**:
+    - The class calculates various financial metrics, such as **valuation ratios**, **profitability ratios**, **leverage ratios**, and more, using the `calculate_ratios()` method.
+    - For better code readability and modularity, we separated individual metric calculations into a custom library (`financial_metrics.py`). Each calculation function handles a specific metric and is reusable for different tickers or data sets.
+
+    3. **Integration and Enhancement**:
+    - The `perform_analysis()` method integrates the workflow to facilitate data fetching, gap filling, ratio calculation, and preparation of the output in one streamlined function.
+    - We recently added the ability to generate a text file of calculated metrics (`final_metrics.txt`). However, there is also room for further optimization.
+
+    ## Potential Improvements
+    1. **Conversion from Text File to CSV**:
+    - While the text file is helpful for initial testing and logging, converting the metrics storage into CSV files would have numerous benefits:
+        - CSV files allow for easy data integration in other parts of the project without having to re-run API calls or recompute metrics.
+        - Using CSV files can save computational power and API limits, as Alpha Vantage has strict call limits, and we can cache results in the CSV for reuse.
+
+    2. **Data Normalization and Feature Preparation**:
+    - Adding a `prepare_features()` method within the class would be useful. This method would include data cleaning, normalization, and scaling of calculated metrics, converting them into a ready-to-use format for model training (e.g., LSTM).
+
+    3. **Support for New Data Sources**:
+    - To improve the availability of missing metrics like the **Current Ratio** and **Quick Ratio**, we may integrate more data sources or use web scraping tools to collect financial data that isn’t accessible via Yahoo Finance or Alpha Vantage.
+
+    4. **Logging Mechanism**:
+    - A more sophisticated logging mechanism can be implemented. Currently, the workflow generates text-based output for validation, but a logging library can help track activities, especially errors or missing data, in a systematic way.
+
+    ## Integration with Feature Engineering Class
+    - Our goal is to ultimately use the `FundamentalAnalyzer` as part of a more extensive feature engineering process. To facilitate this, `perform_analysis()` provides a DataFrame containing the final metrics, which can be fed directly into our feature engineering workflows.
+    - The future `prepare_features()` method will handle scaling and normalizing the metrics so that they are in a usable format for models, ensuring consistency between fundamental and technical features.
     """
 
     def __init__(self):
@@ -220,11 +252,27 @@ class FundamentalAnalysis:
         }
         return pd.DataFrame([metrics])
 
+    def perform_analysis(self):
+        """
+        Perform the full workflow of fundamental analysis:
+        1. Fetch financial data from Yahoo Finance.
+        2. Fill any gaps in the data using Alpha Vantage.
+        3. Calculate financial ratios and metrics.
+        4. Prepare the metrics for further use or integration.
+        """
+        self.fetch_yahoo_financials()
+        self.fill_gaps_with_alpha_vantage()
+        self.calculate_ratios()
+        fundamental_metrics_df = self.get_fundamental_metrics()
+        with open(f"{self.data_path}/final_metrics.txt", "w") as file:
+            file.write(str(fundamental_metrics_df.to_string()))
+        print("file written: ", file)
+        print("Completed Fundamental Analysis.")
+
+        return fundamental_metrics_df
+
 
 if __name__ == "__main__":
     fundamental_analysis = FundamentalAnalysis()
-    fetched_data = fundamental_analysis.fetch_yahoo_financials()
-    fundamental_analysis.fill_gaps_with_alpha_vantage()
-    calculated_data = fundamental_analysis.calculate_ratios()
-    # print("Calculated Financial Ratios:")
-    # print(calculated_data)
+    final_metrics = fundamental_analysis.perform_analysis()
+    print(final_metrics)
