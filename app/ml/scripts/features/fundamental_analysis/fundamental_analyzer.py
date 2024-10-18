@@ -48,9 +48,10 @@ class FundamentalAnalysis:
         self.financial_data["cash_flow"] = stock.cashflow
         self.financial_data["summary"] = stock.info
         print("Fetched Financial Data:")
-        print(self.financial_data)
+        # print(self.financial_data)
         with open(f"{self.data_path}/fetched_financial_data.txt", "w") as file:
             file.write(str(self.financial_data))
+            print("file written: ", file)
         return self.financial_data
 
     def calculate_ratios(self):
@@ -140,8 +141,10 @@ class FundamentalAnalysis:
                 if key not in self.financial_data:
                     self.financial_data[key] = None
 
+        print("calculate_ratios")
         with open(f"{self.data_path}/calculated_ratios.txt", "w") as file:
             file.write(str(self.financial_data))
+            print("file written: ", file)
 
         return self.financial_data
 
@@ -157,7 +160,9 @@ class FundamentalAnalysis:
         }
 
         for key, function in functions.items():
-            if key not in self.financial_data or not self.financial_data[key]:
+            if key not in self.financial_data or self._is_data_missing(
+                self.financial_data[key]
+            ):
                 params = {
                     "function": function,
                     "symbol": self.ticker,
@@ -165,11 +170,28 @@ class FundamentalAnalysis:
                 }
                 response = requests.get(base_url, params=params)
                 if response.status_code == 200:
-                    self.financial_data[key] = response.json()
+                    try:
+                        data = pd.DataFrame(response.json())
+                        if not data.empty:
+                            self.financial_data[key] = data
+                    except ValueError:
+                        print(f"Unexpected data format for {key} from Alpha Vantage.")
                 else:
                     print(
                         f"Failed to fetch {key} from Alpha Vantage. Status code: {response.status_code}"
                     )
+
+    def _is_data_missing(self, data):
+        """
+        Helper function to determine if financial data is missing or incomplete.
+        """
+        if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
+            return (
+                data.isna().all().all()
+                if isinstance(data, pd.DataFrame)
+                else data.isna().all()
+            )
+        return True  # If data is not a DataFrame/Series, assume it's missing.
 
     def get_fundamental_metrics(self):
         """
@@ -204,5 +226,5 @@ if __name__ == "__main__":
     fetched_data = fundamental_analysis.fetch_yahoo_financials()
     fundamental_analysis.fill_gaps_with_alpha_vantage()
     calculated_data = fundamental_analysis.calculate_ratios()
-    print("Calculated Financial Ratios:")
-    print(calculated_data)
+    # print("Calculated Financial Ratios:")
+    # print(calculated_data)
