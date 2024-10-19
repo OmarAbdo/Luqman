@@ -22,7 +22,6 @@ from financial_metrics import (
     calculate_free_cash_flow,
 )
 
-
 class FundamentalAnalysis:
     """
     A class to perform fundamental analysis by fetching financial metrics from data sources such as Yahoo Finance
