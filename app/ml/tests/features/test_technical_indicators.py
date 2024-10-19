@@ -1,7 +1,7 @@
 # scripts/tests/test_technical_indicators.py
 import unittest
 import pandas as pd
-from app.ml.scripts.features.technical_indicators import TechnicalIndicators
+from app.ml.scripts.features.technical_indicators.technical_indicators import TechnicalIndicators
 
 
 class TestTechnicalIndicators(unittest.TestCase):

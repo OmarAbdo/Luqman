@@ -2,13 +2,13 @@
 import unittest
 import os
 import pandas as pd
-from app.ml.scripts.data_fetch import DataFetcher
+from app.ml.scripts.data_fetch import StockPrice
 
 
-class TestDataFetcher(unittest.TestCase):
+class TestStockPrice(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.data_fetcher = DataFetcher()
+        cls.data_fetcher = StockPrice()
         cls.test_data_path = cls.data_fetcher.base_data_path
         cls.sample_ticker = "AAPL"
 

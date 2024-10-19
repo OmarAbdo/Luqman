@@ -4,10 +4,10 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 # Placeholder imports for feature classes
-from app.ml.scripts.features.technical_indicators import TechnicalIndicators
+from app.ml.scripts.features.technical_indicators.technical_indicators import TechnicalIndicators
 from app.ml.scripts.features.sentiment_analyzer import SentimentAnalyzer
 from app.ml.scripts.features.macro_economic_analyzer import MacroEconomicAnalyzer
-from app.ml.scripts.features.fundamental_analysis.fundamental_analysis import FundamentalAnalyzer
+from app.ml.scripts.features.fundamental_analysis.fundamental_analysis import FundamentalAnalysis
 from app.ml.scripts.features.technical_sentiment_indicators import (
     TechnicalSentimentIndicators,
 )
@@ -77,8 +77,8 @@ class FeatureEngineer:
         self.data = self.data.join(macro_data, how="left")  # Join macro-economic data
 
         # Fundamental Analysis
-        fundamental_analyzer = FundamentalAnalyzer()
-        fundamental_data = fundamental_analyzer.get_fundamental_data()
+        fundamental_analyzer = FundamentalAnalysis()
+        fundamental_data = fundamental_analyzer.perform_analysis()
         self.data = self.data.join(
             fundamental_data, how="left"
         )  # Join fundamental data

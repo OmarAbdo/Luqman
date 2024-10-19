@@ -6,12 +6,12 @@ import os
 from datetime import datetime, timedelta
 
 
-class DataFetcher:
+class StockPrice:
     """
     A class responsible for fetching stock, competitor, and market index data
     for LSTM model training and technical analysis, following SOLID principles.
 
-    The DataFetcher class is currently designed to work with yfinance, which is known to have limitations in terms of data availability, especially for short-term, high-frequency data. Despite its limitations, we chose yfinance because it provides easy access to historical financial data with minimal setup, which allows us to rapidly iterate during the early stages of development. This decision enables us to focus on prototyping the core functionalities, while acknowledging that yfinance may be replaced in the future by a more reliable data provider.
+    The StockPrice class is currently designed to work with yfinance, which is known to have limitations in terms of data availability, especially for short-term, high-frequency data. Despite its limitations, we chose yfinance because it provides easy access to historical financial data with minimal setup, which allows us to rapidly iterate during the early stages of development. This decision enables us to focus on prototyping the core functionalities, while acknowledging that yfinance may be replaced in the future by a more reliable data provider.
 
     Our approach includes a "3D analysis," which refers to the combination of multiple time intervals (15 minutes, 1 hour, and daily) for capturing short-term and longer-term market trends. This method is intended to provide a comprehensive perspective for short-term, low-risk trading. The goal is to understand not only the price movement of individual stocks but also how they behave in the context of their sector and broader market indices.
 
@@ -106,5 +106,5 @@ class DataFetcher:
 
 
 if __name__ == "__main__":
-    data_fetcher = DataFetcher()
+    data_fetcher = StockPrice()
     data_fetcher.fetch_all_data()
