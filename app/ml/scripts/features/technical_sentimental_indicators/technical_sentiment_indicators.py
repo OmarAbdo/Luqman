@@ -67,22 +67,74 @@ class TechnicalSentimentIndicators:
 
     def calculate_rsi_divergence(self):
         """
-        Detect divergence between RSI and price, which can indicate potential trend reversals.
+        Detect both regular and hidden divergence between RSI and price, which can indicate potential trend reversals or continuations.
         """
         divergence = [None] * len(self.data)
         rsi = self.data["RSI"]
         close_prices = self.data["Close"]
 
         for i in range(1, len(rsi) - 1):
-            # Bullish divergence: Price makes lower low, RSI makes higher low
+            # Regular Bullish Divergence: Price makes lower low, RSI makes higher low
             if close_prices[i] < close_prices[i - 1] and rsi[i] > rsi[i - 1]:
-                divergence[i] = "Bullish Divergence"
-            # Bearish divergence: Price makes higher high, RSI makes lower high
+                divergence[i] = "Regular Bullish Divergence"
+            # Regular Bearish Divergence: Price makes higher high, RSI makes lower high
             elif close_prices[i] > close_prices[i - 1] and rsi[i] < rsi[i - 1]:
-                divergence[i] = "Bearish Divergence"
+                divergence[i] = "Regular Bearish Divergence"
+            # Hidden Bullish Divergence: Price makes higher low, RSI makes lower low
+            elif close_prices[i] > close_prices[i - 1] and rsi[i] < rsi[i - 1]:
+                divergence[i] = "Hidden Bullish Divergence"
+            # Hidden Bearish Divergence: Price makes lower high, RSI makes higher high
+            elif close_prices[i] < close_prices[i - 1] and rsi[i] > rsi[i - 1]:
+                divergence[i] = "Hidden Bearish Divergence"
 
         self.data["RSI_Divergence"] = divergence
         return self.data[["RSI", "RSI_Divergence"]]
+
+    def calculate_macd(self, fastperiod=12, slowperiod=26, signalperiod=9):
+        """
+        Calculate the Moving Average Convergence Divergence (MACD).
+
+        :param fastperiod: The fast EMA period.
+        :param slowperiod: The slow EMA period.
+        :param signalperiod: The signal line period.
+        :return: A DataFrame with MACD and signal line values.
+        """
+        self.data["EMA_Fast"] = (
+            self.data["Close"].ewm(span=fastperiod, adjust=False).mean()
+        )
+        self.data["EMA_Slow"] = (
+            self.data["Close"].ewm(span=slowperiod, adjust=False).mean()
+        )
+        self.data["MACD"] = self.data["EMA_Fast"] - self.data["EMA_Slow"]
+        self.data["MACD_Signal"] = (
+            self.data["MACD"].ewm(span=signalperiod, adjust=False).mean()
+        )
+        return self.data[["MACD", "MACD_Signal"]]
+
+    def calculate_macd_divergence(self):
+        """
+        Detect both regular and hidden divergence between MACD and price, which can indicate potential trend reversals or continuations.
+        """
+        divergence = [None] * len(self.data)
+        macd = self.data["MACD"]
+        close_prices = self.data["Close"]
+
+        for i in range(1, len(macd) - 1):
+            # Regular Bullish Divergence: Price makes lower low, MACD makes higher low
+            if close_prices[i] < close_prices[i - 1] and macd[i] > macd[i - 1]:
+                divergence[i] = "Regular Bullish Divergence"
+            # Regular Bearish Divergence: Price makes higher high, MACD makes lower high
+            elif close_prices[i] > close_prices[i - 1] and macd[i] < macd[i - 1]:
+                divergence[i] = "Regular Bearish Divergence"
+            # Hidden Bullish Divergence: Price makes higher low, MACD makes lower low
+            elif close_prices[i] > close_prices[i - 1] and macd[i] < macd[i - 1]:
+                divergence[i] = "Hidden Bullish Divergence"
+            # Hidden Bearish Divergence: Price makes lower high, MACD makes higher high
+            elif close_prices[i] < close_prices[i - 1] and macd[i] > macd[i - 1]:
+                divergence[i] = "Hidden Bearish Divergence"
+
+        self.data["MACD_Divergence"] = divergence
+        return self.data[["MACD", "MACD_Divergence"]]
 
     def panic_selling_detection(self):
         """
@@ -163,6 +215,8 @@ class TechnicalSentimentIndicators:
         """
         self.calculate_sentiment_rsi()
         self.calculate_rsi_divergence()
+        self.calculate_macd()
+        self.calculate_macd_divergence()
         self.panic_selling_detection()
         self.buying_spree_detection()
         self.sentiment_based_volume_analysis()
