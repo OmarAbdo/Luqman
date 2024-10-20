@@ -3,11 +3,12 @@
 import os
 import requests
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 
 
 class MacroeconomicDataFetcher:
     """
-    A class to fetch macroeconomic data from the World Bank API.
+    A class to fetch macroeconomic data from the World Bank API and calculate derived metrics.
     """
 
     BASE_DATA_PATH = "app/ml/data"
@@ -61,9 +62,11 @@ class MacroeconomicDataFetcher:
             response.raise_for_status()
             data = response.json()
             df = self.process_world_bank_response(data)
-            self.save_data(
-                df, f"{indicator}_{country_code}_{start_year}_{end_year}_raw"
-            )
+            if not df.empty:
+                df = self.normalize_data(df)
+                self.save_data(
+                    df, f"{indicator}_{country_code}_{start_year}_{end_year}_normalized"
+                )
             return df
         except requests.exceptions.RequestException as e:
             print(
@@ -86,10 +89,73 @@ class MacroeconomicDataFetcher:
             df = pd.DataFrame.from_records(records)
             df = df[["country", "indicator", "date", "value"]]
             df.columns = ["Country", "Indicator", "Year", "Value"]
+            df["Indicator"] = df["Indicator"].apply(
+                lambda x: str(x)
+            )  # Ensure all indicators are strings
             return df
         except (IndexError, KeyError):
             print("Unexpected response format from World Bank API.")
             return pd.DataFrame()
+
+    def normalize_data(self, df):
+        """
+        Normalize the data using Min-Max scaling.
+
+        :param df: DataFrame containing the data to normalize.
+        :return: Normalized DataFrame.
+        """
+        scaler = MinMaxScaler()
+        df["Value"] = scaler.fit_transform(df[["Value"]])
+        return df
+
+    def calculate_derived_metrics(self, df):
+        """
+        Calculate derived metrics such as growth rates and ratios.
+
+        :param df: DataFrame containing the raw macroeconomic data.
+        :return: DataFrame containing the derived metrics.
+        """
+        derived_metrics = []
+        indicators = df["Indicator"].unique()
+        for indicator in indicators:
+            indicator_df = df[df["Indicator"] == indicator].copy()
+            indicator_df.sort_values(by="Year", inplace=True)
+            if indicator == "NY.GDP.MKTP.CD":
+                # Calculate GDP Growth Rate
+                indicator_df["GDP Growth Rate"] = indicator_df["Value"].pct_change()
+            elif indicator == "FP.CPI.TOTL":
+                # Calculate Inflation Rate
+                indicator_df["Inflation Rate"] = indicator_df["Value"].pct_change()
+            elif indicator == "GC.DOD.TOTL.GD.ZS" and "NY.GDP.MKTP.CD" in indicators:
+                # Calculate Debt-to-GDP Ratio
+                gdp_df = df[df["Indicator"] == "NY.GDP.MKTP.CD"].copy()
+                gdp_df = gdp_df[["Country", "Year", "Value"]].rename(
+                    columns={"Value": "GDP_Value"}
+                )
+                merged_df = pd.merge(
+                    indicator_df, gdp_df, on=["Country", "Year"], how="inner"
+                )
+                indicator_df["Debt-to-GDP Ratio"] = (
+                    merged_df["Value"] / merged_df["GDP_Value"]
+                )
+            derived_metrics.append(indicator_df)
+        if derived_metrics:
+            return pd.concat(derived_metrics, ignore_index=True)
+        return df
+
+    def prepare_features(self, df):
+        """
+        Prepare the macroeconomic metrics for model training by normalizing and scaling the data.
+
+        :param df: DataFrame containing the derived metrics.
+        :return: Normalized and scaled DataFrame ready for model training.
+        """
+        scaler = MinMaxScaler()
+        feature_columns = [
+            col for col in df.columns if col not in ["Country", "Indicator", "Year"]
+        ]
+        df[feature_columns] = scaler.fit_transform(df[feature_columns])
+        return df
 
     def save_data(self, data, filename):
         """
@@ -112,9 +178,19 @@ if __name__ == "__main__":
     start_year = "2010"
     end_year = "2023"
 
+    all_data = []
     for indicator, description in MacroeconomicDataFetcher.INDICATORS.items():
         print(f"Fetching data for {description} ({indicator})...")
         data = fetcher.fetch_world_bank_data(
             country_code, indicator, start_year, end_year
         )
-        print(data.head())
+        if not data.empty:
+            all_data.append(data)
+
+    if all_data:
+        combined_data = pd.concat(all_data, ignore_index=True)
+        derived_data = fetcher.calculate_derived_metrics(combined_data)
+        final_features = fetcher.prepare_features(derived_data)
+        fetcher.save_data(
+            final_features, f"macro_features_{country_code}_{start_year}_{end_year}"
+        )
