@@ -5,10 +5,10 @@ from sklearn.preprocessing import MinMaxScaler
 
 # Placeholder imports for feature classes
 from app.ml.scripts.features.technical_indicators.technical_indicators import TechnicalIndicators
-from app.ml.scripts.features.sentiment_analyzer import SentimentAnalyzer
-from app.ml.scripts.features.macro_economic_analyzer import MacroEconomicAnalyzer
+from app.ml.scripts.features.sentimental_analysis.sentimental_analysis import SentimentAnalyzer
+from app.ml.scripts.features.macro_economic_analysis.macro_economic_analysis import MacroEconomicAnalyzer
 from app.ml.scripts.features.fundamental_analysis.fundamental_analysis import FundamentalAnalysis
-from app.ml.scripts.features.technical_sentiment_indicators import (
+from app.ml.scripts.features.technical_sentimental_indicators.technical_sentiment_indicators import (
     TechnicalSentimentIndicators,
 )
 

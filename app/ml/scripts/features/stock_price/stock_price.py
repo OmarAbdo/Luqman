@@ -34,7 +34,7 @@ class StockPrice:
     MINUTE_LIMIT_PERIOD = "1mo"  # Limit for 15-minute data fetching (maximum period)
 
     def __init__(self):
-        self.base_data_path = os.path.join("app/ml/data/", self.TARGET_TICKER)
+        self.base_data_path = os.path.join("app/ml/data/", self.TARGET_TICKER, 'stock')
         self.ensure_directories_exist()
 
     def ensure_directories_exist(self):

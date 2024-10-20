@@ -2,7 +2,7 @@
 import yfinance as yf
 import pandas as pd
 import requests
-import json
+import os
 from financial_metrics import (
     calculate_pe,
     calculate_pb,
@@ -22,11 +22,12 @@ from financial_metrics import (
     calculate_free_cash_flow,
 )
 
+
 class FundamentalAnalysis:
     """
     A class to perform fundamental analysis by fetching financial metrics from data sources such as Yahoo Finance
     and performing custom calculations if necessary.
-    
+
     ## Overview of Workflow
     1. **Data Fetching**:
     - Initially, financial data is fetched from Yahoo Finance, using the `fetch_yahoo_financials()` method.
@@ -38,22 +39,17 @@ class FundamentalAnalysis:
 
     3. **Integration and Enhancement**:
     - The `perform_analysis()` method integrates the workflow to facilitate data fetching, gap filling, ratio calculation, and preparation of the output in one streamlined function.
-    - We recently added the ability to generate a text file of calculated metrics (`final_metrics.txt`). However, there is also room for further optimization.
+    - We recently added the ability to generate a CSV file of calculated metrics (`final_metrics.csv`). This ensures ease of data reuse for other parts of the project and prevents re-running API calls or recomputing metrics.
 
     ## Potential Improvements
-    1. **Conversion from Text File to CSV**:
-    - While the text file is helpful for initial testing and logging, converting the metrics storage into CSV files would have numerous benefits:
-        - CSV files allow for easy data integration in other parts of the project without having to re-run API calls or recompute metrics.
-        - Using CSV files can save computational power and API limits, as Alpha Vantage has strict call limits, and we can cache results in the CSV for reuse.
-
-    2. **Data Normalization and Feature Preparation**:
+    1. **Data Normalization and Feature Preparation**:
     - Adding a `prepare_features()` method within the class would be useful. This method would include data cleaning, normalization, and scaling of calculated metrics, converting them into a ready-to-use format for model training (e.g., LSTM).
 
-    3. **Support for New Data Sources**:
+    2. **Support for New Data Sources**:
     - To improve the availability of missing metrics like the **Current Ratio** and **Quick Ratio**, we may integrate more data sources or use web scraping tools to collect financial data that isn’t accessible via Yahoo Finance or Alpha Vantage.
 
-    4. **Logging Mechanism**:
-    - A more sophisticated logging mechanism can be implemented. Currently, the workflow generates text-based output for validation, but a logging library can help track activities, especially errors or missing data, in a systematic way.
+    3. **Logging Mechanism**:
+    - A more sophisticated logging mechanism can be implemented. Currently, the workflow generates print-based output for validation, but a logging library can help track activities, especially errors or missing data, in a systematic way.
 
     ## Integration with Feature Engineering Class
     - Our goal is to ultimately use the `FundamentalAnalyzer` as part of a more extensive feature engineering process. To facilitate this, `perform_analysis()` provides a DataFrame containing the final metrics, which can be fed directly into our feature engineering workflows.
@@ -64,10 +60,18 @@ class FundamentalAnalysis:
         self.ticker = "AAPL"
         self.data = None
         self.financial_data = {}
-        self.data_path = "app/ml/data/AAPL"
+        self.data_path = os.path.join("app/ml/data", self.ticker, "fundamental")
         self.alpha_vantage_api_key = (
             "YOUR_ALPHA_VANTAGE_API_KEY"  # Replace with your actual API key
         )
+        self.ensure_directories_exist()
+
+    def ensure_directories_exist(self):
+        """
+        Ensure the necessary directories exist for storing fundamental analysis data.
+        """
+        if not os.path.exists(self.data_path):
+            os.makedirs(self.data_path)
 
     def fetch_yahoo_financials(self):
         """
@@ -79,10 +83,6 @@ class FundamentalAnalysis:
         self.financial_data["cash_flow"] = stock.cashflow
         self.financial_data["summary"] = stock.info
         print("Fetched Financial Data:")
-        # print(self.financial_data)
-        with open(f"{self.data_path}/fetched_financial_data.txt", "w") as file:
-            file.write(str(self.financial_data))
-            print("file written: ", file)
         return self.financial_data
 
     def calculate_ratios(self):
@@ -172,13 +172,6 @@ class FundamentalAnalysis:
                 if key not in self.financial_data:
                     self.financial_data[key] = None
 
-        print("calculate_ratios")
-        with open(f"{self.data_path}/calculated_ratios.txt", "w") as file:
-            file.write(str(self.financial_data))
-            print("file written: ", file)
-
-        return self.financial_data
-
     def fill_gaps_with_alpha_vantage(self):
         """
         Fetch data from Alpha Vantage in case metrics are missing.
@@ -263,10 +256,11 @@ class FundamentalAnalysis:
         self.fill_gaps_with_alpha_vantage()
         self.calculate_ratios()
         fundamental_metrics_df = self.get_fundamental_metrics()
-        with open(f"{self.data_path}/final_metrics.txt", "w") as file:
-            file.write(str(fundamental_metrics_df.to_string()))
-        print("file written: ", file)
-        print("Completed Fundamental Analysis.")
+
+        # Save the final metrics as CSV
+        final_metrics_path = os.path.join(self.data_path, "final_metrics.csv")
+        fundamental_metrics_df.to_csv(final_metrics_path, index=False)
+        print(f"Final metrics saved to: {final_metrics_path}")
 
         return fundamental_metrics_df
 
