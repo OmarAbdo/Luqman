@@ -5,3 +5,9 @@ pandas
 scikit-learn
 matplotlib
 tensorflow
+requests
+google-api-python-client
+praw
+yfinance
+BeautifulSoup
+openai

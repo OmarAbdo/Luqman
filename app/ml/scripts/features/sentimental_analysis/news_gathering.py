@@ -1,18 +1,18 @@
 # news_gathering.py
 
 import requests
-from googleapiclient.discovery import build
-import os
-import pandas as pd
 from datetime import datetime
+import os
+import json
 import yfinance as yf
-import praw  # Reddit API wrapper
+from news_sources.google import GoogleNews
+from news_sources.reddit import RedditPosts
 
 
 class NewsGathering:
     """
-    A class to gather relevant news content for financial sentiment analysis.
-    This includes articles, Reddit posts, and press releases that are impactful for the given stock ticker.
+    A class to streamline the news gathering process for financial sentiment analysis.
+    It manages different sources of news content (e.g., Google articles, Reddit posts).
     """
 
     def __init__(
@@ -23,116 +23,66 @@ class NewsGathering:
         reddit_client_secret,
         reddit_user_agent,
     ):
-        """
-        Initialize the news gathering component with the required API keys.
-
-        :param google_api_key: API key for Google Custom Search API.
-        :param google_cse_id: Custom Search Engine ID for Google Custom Search API.
-        :param reddit_client_id: Client ID for Reddit API.
-        :param reddit_client_secret: Client Secret for Reddit API.
-        :param reddit_user_agent: User agent for Reddit API.
-        """
-        self.google_api_key = google_api_key
-        self.google_cse_id = google_cse_id
-
-        # Initialize Reddit API
-        self.reddit = praw.Reddit(
-            client_id=reddit_client_id,
-            client_secret=reddit_client_secret,
-            user_agent=reddit_user_agent,
+        self.google_news = GoogleNews(google_api_key, google_cse_id)
+        self.reddit_posts = RedditPosts(
+            reddit_client_id, reddit_client_secret, reddit_user_agent
         )
 
     def get_company_name(self, ticker):
         """
-        Get the company name from the ticker symbol using Yahoo Finance.
+        Get the company name based on the ticker symbol.
 
         :param ticker: The stock ticker symbol.
-        :return: The name of the company.
+        :return: The company name.
         """
-        try:
-            company_info = yf.Ticker(ticker).info
-            return company_info.get("longName", ticker)
-        except Exception as e:
-            print(f"Failed to fetch company name for {ticker}: {e}")
-            return ticker
+        company = yf.Ticker(ticker)
+        return company.info["shortName"]
 
-    def fetch_google_news(self, ticker):
+    def gather_news_data(self, ticker):
         """
-        Fetch news articles related to a specific stock ticker using Google Custom Search API.
+        Gather news data from Google and Reddit for the given ticker.
 
-        :param ticker: The stock ticker symbol to search for.
-        :return: A list of news article content.
+        :param ticker: The stock ticker symbol.
+        :return: A tuple of Google news content and Reddit post content.
         """
         company_name = self.get_company_name(ticker)
-        query = f"{ticker} {company_name} OR stock OR market OR company OR financial OR news"
-        service = build("customsearch", "v1", developerKey=self.google_api_key)
-        res = service.cse().list(q=query, cx=self.google_cse_id, num=10).execute()
-        fetched_content = []
-
-        if "items" in res:
-            for item in res["items"]:
-                try:
-                    response = requests.get(item["link"])
-                    if response.status_code == 200:
-                        fetched_content.append(response.text)
-                except requests.RequestException as e:
-                    print(f"Failed to fetch data from {item['link']}: {e}")
-
-        return fetched_content
-
-    def fetch_reddit_data(self, ticker):
-        """
-        Fetch recent Reddit posts related to a specific stock ticker using Reddit API.
-
-        :param ticker: The stock ticker symbol to search for.
-        :return: A list of Reddit post content.
-        """
-        company_name = self.get_company_name(ticker)
-        query = f"{ticker} OR {company_name}"
-        posts = []
-
-        try:
-            for submission in self.reddit.subreddit("all").search(query, limit=20):
-                posts.append(submission.title + " " + submission.selftext)
-        except Exception as e:
-            print(f"Failed to fetch Reddit posts: {e}")
-
-        return posts
+        news_links = self.google_news.get_news_links(company_name)
+        news_content = self.google_news.fetch_news(news_links)
+        reddit_content = self.reddit_posts.fetch_posts(ticker)
+        return news_content, reddit_content
 
     def save_news_data(self, ticker, news_content, reddit_content):
         """
-        Save the gathered news data to a CSV file.
+        Save the gathered news data to separate JSON files.
 
         :param ticker: The stock ticker symbol for which news data is being saved.
         :param news_content: A list of news articles.
         :param reddit_content: A list of Reddit posts.
         """
-        news_data = [
-            {"content": content, "type": "news", "timestamp": datetime.now()}
-            for content in news_content
-        ]
+        news_path = f"app/ml/data/{ticker}/news_gathering/google_news.json"
+        reddit_path = f"app/ml/data/{ticker}/news_gathering/reddit_posts.json"
+        os.makedirs(os.path.dirname(news_path), exist_ok=True)
 
-        reddit_data = [
-            {"content": post, "type": "reddit", "timestamp": datetime.now()}
-            for post in reddit_content
-        ]
+        # Save Google News data
+        with open(news_path, "w", encoding="utf-8") as news_file:
+            json.dump(news_content, news_file, indent=4)
+            print(f"[INFO] News data saved to {news_path}")
 
-        all_data = news_data + reddit_data
-        news_df = pd.DataFrame(all_data)
-
-        path = f"app/ml/data/{ticker}/news_gathering/news_data.csv"
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        news_df.to_csv(path, index=False)
-        print(f"News data saved to {path}")
+        # Save Reddit data
+        with open(reddit_path, "w", encoding="utf-8") as reddit_file:
+            json.dump(reddit_content, reddit_file, indent=4)
+            print(f"[INFO] Reddit data saved to {reddit_path}")
 
 
 # Example usage
 if __name__ == "__main__":
-    google_api_key = "your_google_api_key_here"
-    google_cse_id = "your_google_cse_id_here"
-    reddit_client_id = "your_reddit_client_id_here"
-    reddit_client_secret = "your_reddit_client_secret_here"
-    reddit_user_agent = "your_reddit_user_agent_here"
+    google_api_key = "AIzaSyAP87TlgbKQWk10xTXke6Kn6kHRyfuIB_I"
+    google_cse_id = "2353131eb16b54bcd"  # Search engine ID
+
+    reddit_client_id = "M1DFQZCTGE8tZYgAbsMT1A"
+    reddit_client_secret = "HuIvXTtFxCQslw-JodBqEVu-xyA3ig"
+    reddit_user_agent = "Luqman"
+
 
     news_gathering = NewsGathering(
         google_api_key,
@@ -144,6 +94,7 @@ if __name__ == "__main__":
 
     # Fetch and save news data for a specific ticker
     ticker = "AAPL"
-    news_content = news_gathering.fetch_google_news(ticker)
-    reddit_content = news_gathering.fetch_reddit_data(ticker)
+    print(f"[INFO] Fetching news data for {ticker}")
+    news_content, reddit_content = news_gathering.gather_news_data(ticker)
+    print(f"[INFO] Saving news data for {ticker}")
     news_gathering.save_news_data(ticker, news_content, reddit_content)
