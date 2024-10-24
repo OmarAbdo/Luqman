@@ -5,8 +5,9 @@ from datetime import datetime
 import os
 import json
 import yfinance as yf
-from news_sources.google import GoogleNews
 from news_sources.reddit import RedditPosts
+# import NewsAPI
+from news_sources.newsapi import NewsAPI
 
 
 class NewsGathering:
@@ -17,13 +18,13 @@ class NewsGathering:
 
     def __init__(
         self,
-        google_api_key,
-        google_cse_id,
+        # google_api_key,
+        # google_cse_id,
         reddit_client_id,
         reddit_client_secret,
         reddit_user_agent,
     ):
-        self.google_news = GoogleNews(google_api_key, google_cse_id)
+        self.newsapi_news = NewsAPI("445a36e057ee4663bc15f403d76fd0b5")
         self.reddit_posts = RedditPosts(
             reddit_client_id, reddit_client_secret, reddit_user_agent
         )
@@ -46,8 +47,8 @@ class NewsGathering:
         :return: A tuple of Google news content and Reddit post content.
         """
         company_name = self.get_company_name(ticker)
-        news_links = self.google_news.get_news_links(company_name, ticker)
-        news_content = self.google_news.fetch_news(news_links)
+        news_links = self.newsapi_news.get_news_links(company_name)
+        news_content = self.newsapi_news.fetch_news(news_links)
         reddit_content = self.reddit_posts.fetch_posts(ticker)
         return news_content, reddit_content
 
@@ -59,7 +60,7 @@ class NewsGathering:
         :param news_content: A list of news articles.
         :param reddit_content: A list of Reddit posts.
         """
-        news_path = f"app/ml/data/{ticker}/news_gathering/google_news.json"
+        news_path = f"app/ml/data/{ticker}/news_gathering/newsapi_news.json"
         reddit_path = f"app/ml/data/{ticker}/news_gathering/reddit_posts.json"
         os.makedirs(os.path.dirname(news_path), exist_ok=True)
 
@@ -76,8 +77,8 @@ class NewsGathering:
 
 # Example usage
 if __name__ == "__main__":
-    google_api_key = "AIzaSyAP87TlgbKQWk10xTXke6Kn6kHRyfuIB_I"
-    google_cse_id = "2353131eb16b54bcd"  # Search engine ID
+    # google_api_key = "AIzaSyAP87TlgbKQWk10xTXke6Kn6kHRyfuIB_I"
+    # google_cse_id = "2353131eb16b54bcd"  # Search engine ID
 
     reddit_client_id = "M1DFQZCTGE8tZYgAbsMT1A"
     reddit_client_secret = "HuIvXTtFxCQslw-JodBqEVu-xyA3ig"
@@ -85,8 +86,8 @@ if __name__ == "__main__":
 
 
     news_gathering = NewsGathering(
-        google_api_key,
-        google_cse_id,
+        # google_api_key,
+        # google_cse_id,
         reddit_client_id,
         reddit_client_secret,
         reddit_user_agent,

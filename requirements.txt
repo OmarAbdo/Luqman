@@ -13,3 +13,4 @@ BeautifulSoup
 openai
 selenium
 webdriver-manager
+fake_useragent
