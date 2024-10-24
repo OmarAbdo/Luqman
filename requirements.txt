@@ -11,3 +11,5 @@ praw
 yfinance
 BeautifulSoup
 openai
+selenium
+webdriver-manager

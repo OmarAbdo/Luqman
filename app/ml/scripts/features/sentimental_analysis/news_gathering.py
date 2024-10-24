@@ -46,7 +46,7 @@ class NewsGathering:
         :return: A tuple of Google news content and Reddit post content.
         """
         company_name = self.get_company_name(ticker)
-        news_links = self.google_news.get_news_links(company_name)
+        news_links = self.google_news.get_news_links(company_name, ticker)
         news_content = self.google_news.fetch_news(news_links)
         reddit_content = self.reddit_posts.fetch_posts(ticker)
         return news_content, reddit_content

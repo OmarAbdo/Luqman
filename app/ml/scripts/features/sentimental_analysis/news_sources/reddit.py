@@ -25,7 +25,7 @@ class RedditPosts:
         query = f"{ticker}"
 
         try:
-            for submission in self.reddit.subreddit("all").search(query, limit=20):
+            for submission in self.reddit.subreddit("all").search(query, limit=1):
                 if submission.selftext.strip():
                     content = submission.selftext
                 else:
