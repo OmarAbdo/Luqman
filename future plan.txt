@@ -29,7 +29,7 @@ my_stock_app/
 │   │   ├── db_adapters/            # DB Adapters (mapping domain models to DB models)
 │   │   └── ml_adapter/             # ML Adapter (LSTM Model)
 │   ├── infrastructure/
-│   │   ├── api/controllers/        # Flask Controllers
+│   │   ├── controllers/            # Flask Controllers
 │   │   ├── db/                     # DB Models (SQLAlchemy, etc.)
 │   │   ├── ml/                     # ML training and prediction logic
 │   └── config/                     # Configuration
