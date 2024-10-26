@@ -16,6 +16,7 @@ from features.technical_sentiment_indicators.technical_sentiment_indicators impo
     TechnicalSentimentIndicators,
 )
 
+# [TODO] Test the merge of each feature class into the main dataset separately. this is completely unreliable 
 
 class FeatureEngineer:
     """
@@ -42,32 +43,48 @@ class FeatureEngineer:
         self.data = technical_indicators.add_indicators()
 
         # Sentiment Analysis
-        sentiment_analyzer = SentimentScore(
-            "YOUR_ALPHA_VANTAGE_API_KEY"
-        )  # Replace with actual API key
+        sentiment_analyzer = SentimentScore("AOOE7AD9CPPFTQHH")  # Replace with actual API key
         sentiment_data = sentiment_analyzer.get_sentiment_score("AAPL")
         sentiment_df = pd.DataFrame([sentiment_data]).set_index("timestamp")
-        self.data = self.data.join(sentiment_df, how="left")  # Join sentiment data
+        self.data = self.data.join(
+            sentiment_df, how="left", rsuffix="_sentiment"
+        )  # Join sentiment data
 
         # Macro-Economic Analysis
         macro_analyzer = MacroeconomicDataFetcher()
-        macro_data = macro_analyzer.prepare_features(
-            macro_analyzer.calculate_derived_metrics(pd.DataFrame())
+        all_data = []
+        country_code = "US"
+        start_year = "2010"
+        end_year = "2023"
+        for indicator, description in MacroeconomicDataFetcher.INDICATORS.items():
+            print(f"Fetching data for {description} ({indicator})...")
+            data = macro_analyzer.fetch_world_bank_data(
+                country_code, indicator, start_year, end_year
+            )
+            if not data.empty:
+                all_data.append(data)
+        macro_raw_data = (
+            pd.concat(all_data, ignore_index=True) if all_data else pd.DataFrame()
         )
-        self.data = self.data.join(macro_data, how="left")  # Join macro-economic data
+        macro_data = macro_analyzer.prepare_features(
+            macro_analyzer.calculate_derived_metrics(macro_raw_data)
+        )
+        self.data = self.data.join(
+            macro_data, how="left", rsuffix="_macro"
+        )  # Join macro-economic data
 
         # Fundamental Analysis
         fundamental_analyzer = FundamentalAnalysis()
         fundamental_data = fundamental_analyzer.perform_analysis()
         self.data = self.data.join(
-            fundamental_data, how="left"
+            fundamental_data, how="left", rsuffix="_fundamental"
         )  # Join fundamental data
 
         # Technical Sentiment Indicators
         technical_sentiment = TechnicalSentimentIndicators(self.data)
         sentiment_indicators_data = technical_sentiment.execute_analysis()
         self.data = self.data.join(
-            sentiment_indicators_data, how="left"
+            sentiment_indicators_data, how="left", rsuffix="_technical_sentiment"
         )  # Join technical sentiment data
 
         return self
@@ -102,16 +119,21 @@ class FeatureEngineer:
         """
         Normalize the data using Min-Max scaling.
         """
-        self.data = pd.DataFrame(
-            self.scaler.fit_transform(self.data),
-            columns=self.data.columns,
+        numeric_cols = self.data.select_dtypes(include=[np.number]).columns
+        non_numeric_data = self.data.drop(columns=numeric_cols)
+
+        scaled_numeric_data = pd.DataFrame(
+            self.scaler.fit_transform(self.data[numeric_cols]),
+            columns=numeric_cols,
             index=self.data.index,
         )
+
+        self.data = pd.concat([scaled_numeric_data, non_numeric_data], axis=1)
         return self
 
     def create_sequences(self, sequence_length=60):
         """
-        Create sequences of data for LSTM training.
+        Create sequences of data for LSTM training and save them to CSV files.
         """
         sequences = []
         targets = []
@@ -123,7 +145,21 @@ class FeatureEngineer:
                 data_array[i + sequence_length, 3]
             )  # Assuming 'Close' is the 4th column
 
-        return np.array(sequences), np.array(targets)
+        sequences = np.array(sequences)
+        targets = np.array(targets)
+
+        # Save sequences and targets to CSV files in the training data folder
+        os.makedirs("app/ml/training_data", exist_ok=True)
+        sequences_flattened = [
+            seq.flatten() for seq in sequences
+        ]  # Flatten each sequence for saving in CSV format
+        sequences_df = pd.DataFrame(sequences_flattened)
+        sequences_df.to_csv("app/ml/training_data/lstm_sequences.csv", index=False)
+
+        targets_df = pd.DataFrame(targets, columns=["Target"])
+        targets_df.to_csv("app/ml/training_data/lstm_targets.csv", index=False)
+
+        return sequences, targets
 
 
 if __name__ == "__main__":

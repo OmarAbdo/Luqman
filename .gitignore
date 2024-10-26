@@ -1,2 +1,3 @@
 venv
 app/ml/data/**
+app/ml/training_data/**
