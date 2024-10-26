@@ -1,6 +1,13 @@
 # scripts/train_model.py
 from tensorflow.keras.callbacks import ModelCheckpoint
 from sklearn.model_selection import train_test_split
+
+import sys
+import os
+
+# Add the root directory to the sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
+
 from lstm_model import build_lstm_model
 from feature_engineering import create_sequences
 

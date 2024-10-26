@@ -3,7 +3,11 @@ import yfinance as yf
 import pandas as pd
 import requests
 import os
-from financial_metrics import (
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+from features.fundamental_analysis.financial_metrics import (
     calculate_pe,
     calculate_pb,
     calculate_ev_ebitda,

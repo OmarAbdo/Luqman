@@ -1,14 +1,18 @@
-# scripts/feature_engineering.py
+# feature_engineering.py
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+import sys
+import os
 
-# Placeholder imports for feature classes
-from app.ml.scripts.features.technical_indicators.technical_indicators import TechnicalIndicators
-from app.ml.scripts.features.sentimental_analysis.sentimental_analysis import SentimentAnalyzer
-from app.ml.scripts.features.macro_economic_analysis.macro_economic_analysis import MacroEconomicAnalyzer
-from app.ml.scripts.features.fundamental_analysis.fundamental_analysis import FundamentalAnalysis
-from app.ml.scripts.features.technical_sentimental_indicators.technical_sentiment_indicators import (
+# Add the root directory to the sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
+
+from features.technical_indicators.technical_indicators import TechnicalIndicators
+from features.sentiment_score.sentiment_score import SentimentScore
+from features.macro_economic_analysis.macro_economic_analysis import MacroeconomicDataFetcher
+from features.fundamental_analysis.fundamental_analysis import FundamentalAnalysis
+from features.technical_sentiment_indicators.technical_sentiment_indicators import (
     TechnicalSentimentIndicators,
 )
 
@@ -16,42 +20,13 @@ from app.ml.scripts.features.technical_sentimental_indicators.technical_sentimen
 class FeatureEngineer:
     """
     A class to handle feature engineering for stock data, including adding technical indicators,
-    normalizing data, preparing sequences for LSTM models, and handling outliers.
+    normalizing data, preparing sequences for AI models, and handling outliers.
 
-    Documentation:
-
-    The feature engineering process began with the goal of enriching our dataset for LSTM model training by adding
-    relevant indicators and features that would help capture various aspects of market behavior. Initially, we focused
-    on adding technical indicators such as Moving Averages, RSI, Bollinger Bands, and MACD. These indicators provide
-    insights into trends, momentum, and volatility, which are crucial for short-term price action.
-
-    As we progressed, we realized that there are multiple types of features that could be beneficial for our model,
-    each providing unique perspectives on the market and company-specific behaviors. We identified the following
-    types of features:
-
-    1. Technical Indicators: Traditional price-based indicators that help understand price trends, volatility, and
-       momentum.
-    2. Sentiment Analysis Feature: Derived from social media, news articles, and other public sources to gauge
-       market sentiment about a stock or sector.
-    3. Macro-Economic Analysis Feature: Broader economic indicators such as interest rates, inflation, and GDP,
-       providing context on the overall economic environment.
-    4. Fundamental Analysis Feature: Focuses on the financial health of the company, including metrics like P/E
-       ratio, Debt-to-Equity, and other financial ratios.
-    5. Technical Sentiment Indicators: Metrics like the Volatility Index (VIX) and Put-Call Ratio, which reflect
-       overall market sentiment and expectations of future volatility.
-
-    To ensure modularity, scalability, and clean integration, we decided to create separate classes for each type of
-    feature. Each feature class will be responsible for fetching, analyzing, and normalizing its respective data, and
-    the output of each will be combined into the main dataset. This approach ensures that each feature type can be
-    maintained independently and reused as needed.
-
-    The `FeatureEngineer` class will serve as the central integration point, calling on each feature class and
-    adding their output to the main dataset. This allows us to add more features in the future or modify existing
-    ones without affecting the overall system architecture.
-
-    Moving forward, we also plan to implement manual feature scaling and attention mechanisms to dynamically
-    emphasize specific features during model training. This will help the LSTM model better understand which
-    features are most important in different market conditions.
+    The `FeatureEngineer` class is responsible for:
+    - Integrating various data features from multiple analysis classes (technical, sentiment, macroeconomic, etc.).
+    - Handling outliers and missing values in the dataset.
+    - Normalizing data for model readiness.
+    - Creating sequences for time-series models like LSTMs.
     """
 
     def __init__(self, data: pd.DataFrame):
@@ -60,20 +35,25 @@ class FeatureEngineer:
 
     def integrate_all_features(self):
         """
-        Integrate all feature classes (technical indicators, sentiment analysis, etc.)
+        Integrate all feature classes (technical indicators, sentiment analysis, etc.).
         """
         # Technical Indicators
         technical_indicators = TechnicalIndicators(self.data)
         self.data = technical_indicators.add_indicators()
 
         # Sentiment Analysis
-        sentiment_analyzer = SentimentAnalyzer()
-        sentiment_data = sentiment_analyzer.get_sentiment_data()
-        self.data = self.data.join(sentiment_data, how="left")  # Join sentiment data
+        sentiment_analyzer = SentimentScore(
+            "YOUR_ALPHA_VANTAGE_API_KEY"
+        )  # Replace with actual API key
+        sentiment_data = sentiment_analyzer.get_sentiment_score("AAPL")
+        sentiment_df = pd.DataFrame([sentiment_data]).set_index("timestamp")
+        self.data = self.data.join(sentiment_df, how="left")  # Join sentiment data
 
         # Macro-Economic Analysis
-        macro_analyzer = MacroEconomicAnalyzer()
-        macro_data = macro_analyzer.get_macro_data()
+        macro_analyzer = MacroeconomicDataFetcher()
+        macro_data = macro_analyzer.prepare_features(
+            macro_analyzer.calculate_derived_metrics(pd.DataFrame())
+        )
         self.data = self.data.join(macro_data, how="left")  # Join macro-economic data
 
         # Fundamental Analysis
@@ -84,8 +64,8 @@ class FeatureEngineer:
         )  # Join fundamental data
 
         # Technical Sentiment Indicators
-        technical_sentiment = TechnicalSentimentIndicators()
-        sentiment_indicators_data = technical_sentiment.get_sentiment_indicators()
+        technical_sentiment = TechnicalSentimentIndicators(self.data)
+        sentiment_indicators_data = technical_sentiment.execute_analysis()
         self.data = self.data.join(
             sentiment_indicators_data, how="left"
         )  # Join technical sentiment data
@@ -149,7 +129,7 @@ class FeatureEngineer:
 if __name__ == "__main__":
     # Example usage
     data = pd.read_csv(
-        "app/ml/data/AAPL/AAPL_1d_5y.csv", index_col="Date", parse_dates=True
+        "app/ml/data/AAPL/stock/AAPL_1d_5y.csv", index_col="Date", parse_dates=True
     )
     feature_engineer = FeatureEngineer(data)
     feature_engineer.integrate_all_features().handle_outliers().handle_missing_values().normalize_data()
