@@ -21,10 +21,14 @@ class StockDataHandler:
         self.merged_data = pd.merge(
             self.df1, self.df2, left_index=True, right_index=True, how="inner"
         )
-        # Remove duplicate columns by renaming them and keeping only one
-        self.merged_data = self.merged_data.loc[
-            :, ~self.merged_data.columns.duplicated()
-        ].rename(columns=lambda x: x.replace("_x", "").replace("_y", ""))
+        # Remove duplicate columns by selecting only one version of columns with '_x' or '_y' suffix
+        for column in self.merged_data.columns:
+            if column.endswith("_x") or column.endswith("_y"):
+                base_column = column[:-2]
+                if base_column in self.merged_data.columns:
+                    self.merged_data.drop(column, axis=1, inplace=True)
+                else:
+                    self.merged_data.rename(columns={column: base_column}, inplace=True)
         return self
 
     def save_data(self):
