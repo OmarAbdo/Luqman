@@ -1,14 +1,36 @@
 import pandas as pd
+import os
 
 
-# [TODO] Do the normalization
-# [TODO] the name of the output file should contain the ticker and the time frame
 class StockDataHandler:
-    def __init__(self, file1, file2, output_file):
+    def __init__(self, file1, file2):
         self.file1 = file1
         self.file2 = file2
-        self.output_file = output_file
+        self.ticker = self.extract_ticker()
+        self.output_file = (
+            f"app/ml/data_processed/{self.ticker}/stock/processed_data.csv"
+        )
         self.merged_data = None
+
+    def extract_ticker(self):
+        """Extracts the ticker name from the file path."""
+        # Extract the ticker assuming it's the parent folder of 'technical_indicators' or similar
+        try:
+            parts = os.path.normpath(self.file1).split(os.sep)
+            if "technical_indicators" in parts:
+                return parts[parts.index("technical_indicators") - 1]
+            elif "technical_sentimental" in parts:
+                return parts[parts.index("technical_sentimental") - 1]
+            else:
+                return parts[4]  # Fallback, adjust if needed
+        except IndexError:
+            raise ValueError(
+                "Unable to extract ticker from the provided file path. Check the file path structure."
+            )  # Adjust index if path structure changes
+        except IndexError:
+            raise ValueError(
+                "Unable to extract ticker from the provided file path. Check the file path structure."
+            )
 
     def load_data(self):
         """Loads the two CSV files into DataFrames."""
@@ -35,6 +57,7 @@ class StockDataHandler:
 
     def save_data(self):
         """Saves the merged DataFrame to a CSV file."""
+        os.makedirs(os.path.dirname(self.output_file), exist_ok=True)
         self.merged_data.to_csv(self.output_file)
 
 
@@ -44,9 +67,8 @@ if __name__ == "__main__":
     technical_sentiment_file = (
         "app/ml/data/AAPL/technical_sentimental/analyzed_data_1h.csv"
     )
-    output_file = "app/ml/data_processed/processed_data.csv"
 
-    merger = StockDataHandler(technical_file, technical_sentiment_file, output_file)
+    merger = StockDataHandler(technical_file, technical_sentiment_file)
     merger.load_data().merge_data().save_data()
 
-    print(f"Merged data saved to {output_file}")
+    print(f"Merged data saved to {merger.output_file}")

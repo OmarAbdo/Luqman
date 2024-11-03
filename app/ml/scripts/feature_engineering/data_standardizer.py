@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.impute import SimpleImputer
 
 
 class DataStandardizer:
@@ -17,7 +17,7 @@ class DataStandardizer:
 
     def load_data(self):
         """Loads the CSV file into a DataFrame."""
-        self.data = pd.read_csv(self.input_file)
+        self.data = pd.read_csv(self.input_file, index_col=0)
         return self
 
     def identify_columns(self):
@@ -34,6 +34,41 @@ class DataStandardizer:
                 self.categorical_columns.append(column)
         return self
 
+    def handle_missing_values(self):
+        """Handles missing values by imputing them."""
+        # Impute numeric columns with the mean
+        imputer_numeric = SimpleImputer(strategy="mean")
+        self.data[self.numeric_columns] = imputer_numeric.fit_transform(
+            self.data[self.numeric_columns]
+        )
+
+        # Impute categorical columns with the most frequent value
+        imputer_categorical = SimpleImputer(strategy="most_frequent")
+        self.data[self.categorical_columns] = imputer_categorical.fit_transform(
+            self.data[self.categorical_columns]
+        )
+
+        # For boolean columns, fill missing values with 0 (assuming False)
+        self.data[self.boolean_columns] = self.data[self.boolean_columns].fillna(0)
+        return self
+
+    def handle_outliers(self):
+        """Handles outliers in numeric columns using the IQR method."""
+        for column in self.numeric_columns:
+            Q1 = self.data[column].quantile(0.25)
+            Q3 = self.data[column].quantile(0.75)
+            IQR = Q3 - Q1
+            lower_bound = Q1 - 1.5 * IQR
+            upper_bound = Q3 + 1.5 * IQR
+            # Cap the outliers to the lower and upper bounds
+            self.data[column] = np.where(
+                self.data[column] < lower_bound, lower_bound, self.data[column]
+            )
+            self.data[column] = np.where(
+                self.data[column] > upper_bound, upper_bound, self.data[column]
+            )
+        return self
+
     def standardize_numeric(self):
         """Normalizes numeric fields using Min-Max normalization."""
         scaler = MinMaxScaler()
@@ -47,10 +82,12 @@ class DataStandardizer:
         self.data[self.boolean_columns] = self.data[self.boolean_columns].astype(int)
         return self
 
-    def encode_categorical(self):
-        """Encodes categorical fields using label encoding for simplicity."""
+    def one_hot_encode_categorical(self):
+        """Applies one-hot encoding to categorical fields."""
         for column in self.categorical_columns:
-            self.data[column] = self.data[column].astype("category").cat.codes
+            dummies = pd.get_dummies(self.data[column], prefix=column).astype(int)
+            self.data = pd.concat([self.data, dummies], axis=1)
+            self.data.drop(column, axis=1, inplace=True)
         return self
 
     def handle_datetime(self):
@@ -65,7 +102,7 @@ class DataStandardizer:
             self.data["DayOfWeek"] = datetime_series.dt.weekday
             day_of_week_dummies = pd.get_dummies(
                 self.data["DayOfWeek"], prefix="DayOfWeek"
-            )
+            ).astype(int)
             self.data = pd.concat([self.data, day_of_week_dummies], axis=1)
             self.data.drop([self.datetime_column, "DayOfWeek"], axis=1, inplace=True)
         return self
@@ -79,9 +116,11 @@ class DataStandardizer:
         return (
             self.load_data()
             .identify_columns()
+            .handle_missing_values()
+            .handle_outliers()
             .standardize_numeric()
             .convert_boolean()
-            .encode_categorical()
+            .one_hot_encode_categorical()
             .handle_datetime()
             .save_standardized_data()
         )
@@ -89,8 +128,8 @@ class DataStandardizer:
 
 # Example usage:
 if __name__ == "__main__":
-    input_file = "app/ml/data_processed/processed_data.csv"
-    output_file = "app/ml/data_processed/standardized_data.csv"
+    input_file = "app/ml/data_processed/AAPL/stock/processed_data.csv"
+    output_file = "app/ml/data_processed/AAPL/stock/standardized_data.csv"
 
     standardizer = DataStandardizer(input_file, output_file)
     standardizer.standardize_data()
