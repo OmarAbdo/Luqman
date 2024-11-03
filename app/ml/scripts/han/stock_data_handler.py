@@ -1,6 +1,8 @@
 import pandas as pd
 
 
+# [TODO] Do the normalization
+# [TODO] the name of the output file should contain the ticker and the time frame
 class StockDataHandler:
     def __init__(self, file1, file2, output_file):
         self.file1 = file1
