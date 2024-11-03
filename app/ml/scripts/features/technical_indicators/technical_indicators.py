@@ -1,5 +1,7 @@
 # scripts/features/technical_indicators.py
 import pandas as pd
+import os
+import glob
 
 
 class TechnicalIndicators:
@@ -45,13 +47,35 @@ class TechnicalIndicators:
 
         return self.data
 
+    def save_to_csv(self, ticker, interval):
+        """
+        Save the dataset with technical indicators to a CSV file.
+
+        :param ticker: The stock ticker symbol.
+        :param interval: The time interval (e.g., '15m', '1h', '1d').
+        """
+        output_dir = f"app/ml/data/{ticker}/technical_indicators"
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, f"technical_indicators_{interval}.csv")
+        self.data.to_csv(output_path)
+        print(f"Technical indicators saved to {output_path}")
+
 
 if __name__ == "__main__":
-    # Example usage
-    pd.set_option("display.max_columns", None)  # Display all columns
-    data = pd.read_csv(
-        "app/ml/data/AAPL/AAPL_1d_5y.csv", index_col="Date", parse_dates=True
-    )
-    technical_indicators = TechnicalIndicators(data)
-    data_with_indicators = technical_indicators.add_indicators()
-    print(data_with_indicators.tail())
+    intervals = ["15m", "1h", "1d"]
+    ticker = "AAPL"
+
+    for interval in intervals:
+        # Load the corresponding data file for each interval
+        file_pattern = f"app/ml/data/{ticker}/stock/{ticker}_{interval}_*.csv"
+        file_list = glob.glob(file_pattern)
+        if file_list:
+            file_path = file_list[0]  # Take the first matching file
+            data = pd.read_csv(file_path, parse_dates=True)
+            if "Date" in data.columns:
+                data.set_index("Date", inplace=True)
+            technical_indicators = TechnicalIndicators(data)
+            data_with_indicators = technical_indicators.add_indicators()
+            technical_indicators.save_to_csv(ticker, interval)
+        else:
+            print(f"No data file found for interval {interval}")
