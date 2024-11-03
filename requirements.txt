@@ -15,3 +15,4 @@ selenium
 webdriver-manager
 fake_useragent
 torch
+seaborn
