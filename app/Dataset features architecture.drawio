@@ -1,0 +1,76 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8">
+  <diagram name="Page-1" id="N5b0p7L8l5KmWmpkOHEH">
+    <mxGraphModel dx="1909" dy="1144" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-1" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="280" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-2" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="40" width="280" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-3" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="760" width="280" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-4" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="760" width="280" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-5" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="400" width="280" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-6" value="Price&lt;br&gt;15 minutes" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=25;" vertex="1" parent="1">
+          <mxGeometry x="110" y="130" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-7" value="Sentimental&amp;nbsp;&lt;br&gt;Daily" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=25;" vertex="1" parent="1">
+          <mxGeometry x="510" y="130" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-8" value="Macro&lt;br&gt;Annual" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=25;" vertex="1" parent="1">
+          <mxGeometry x="510" y="850" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-9" value="Technical&lt;br&gt;15 minutes&lt;br&gt;(Based on price)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=25;" vertex="1" parent="1">
+          <mxGeometry x="60" y="850" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-10" value="Technical&lt;br&gt;Sentimental&lt;br&gt;15 minutes&lt;br&gt;(Based on price)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=25;" vertex="1" parent="1">
+          <mxGeometry x="65" y="490" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-11" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="400" width="280" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-12" value="Fundamental&lt;br&gt;Quarterly" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=25;" vertex="1" parent="1">
+          <mxGeometry x="510" y="490" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-13" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="40" width="750" height="830" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-14" value="Macro economics annual context" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=30;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="820" y="70" width="500" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-15" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="840" y="120" width="500" height="530" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-16" value="Fundamental analysis quarterly context" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="840" y="145" width="500" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-17" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="870" y="220" width="430" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-18" value="Sentiment daily context" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="760" y="240" width="500" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-19" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="320" width="160" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-20" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="320" width="160" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-21" value="Intra-daily or daily price movement technical analysis" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="950" y="375" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="-YfQ6buhX9R_sbqZpVhi-22" value="Intra-daily or daily price movement technical&lt;br&gt;sentimental&lt;br&gt;&amp;nbsp;analysis" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1130" y="375" width="60" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
