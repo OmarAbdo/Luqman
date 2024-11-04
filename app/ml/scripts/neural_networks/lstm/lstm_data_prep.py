@@ -11,6 +11,8 @@ class LSTMDataPreparer:
         input_file,
         sequence_length=30,
         output_dir="app/ml/data_processed/AAPL/stock/lstm_ready/",
+        feature_columns=None,
+        sample_rate=0.1,
     ):
         """
         Initializes the LSTMDataPreparer class.
@@ -19,6 +21,8 @@ class LSTMDataPreparer:
             input_file (str): Path to the input standardized CSV file.
             sequence_length (int): The length of each sequence for LSTM input (default is 30).
             output_dir (str): Directory to save the processed LSTM-ready data.
+            feature_columns (list): List of columns to use as features. If None, use all columns.
+            sample_rate (float): Proportion of the data to sample if the dataset is too large (default is 0.1).
 
         From a user perspective:
         - This initializes the class with the required input file and the desired sequence length.
@@ -31,6 +35,8 @@ class LSTMDataPreparer:
         self.input_file = input_file
         self.sequence_length = sequence_length
         self.output_dir = output_dir
+        self.feature_columns = feature_columns
+        self.sample_rate = sample_rate
         self.data = None
         self.X = None
         self.y = None
@@ -46,7 +52,25 @@ class LSTMDataPreparer:
         - Uses pandas to read the CSV and load it into a DataFrame.
         - Stores the loaded data in the `self.data` attribute.
         """
-        self.data = pd.read_csv(self.input_file)
+        self.data = pd.read_csv(self.input_file, index_col=0, low_memory=False)
+        if self.feature_columns:
+            self.data = self.data[self.feature_columns]
+        return self
+
+    def sample_data(self):
+        """
+        Samples the data if the dataset is too large to handle.
+
+        From a user perspective:
+        - This method reduces the dataset size for faster processing.
+
+        From a technical perspective:
+        - Randomly samples a fraction of the data based on `self.sample_rate`.
+        """
+        if self.sample_rate < 1.0:
+            self.data = self.data.sample(
+                frac=self.sample_rate, random_state=42
+            ).reset_index(drop=True)
         return self
 
     def prepare_sequences(self):
@@ -124,8 +148,8 @@ class LSTMDataPreparer:
 if __name__ == "__main__":
     input_file = "app/ml/data_processed/AAPL/stock/standardized_data.csv"
 
-    preparer = LSTMDataPreparer(input_file)
-    preparer.load_data().prepare_sequences().save_data()
+    preparer = LSTMDataPreparer(input_file, sequence_length=60, sample_rate=0.05)
+    preparer.load_data().sample_data().prepare_sequences().save_data()
 
     X_train, X_test, y_train, y_test = preparer.split_data()
     print(f"Training data shape: {X_train.shape}")

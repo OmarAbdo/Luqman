@@ -8,7 +8,9 @@ import seaborn as sns
 
 
 class LSTMModelTrainer:
-    def __init__(self, X_train_file, y_train_file, X_test_file, y_test_file):
+    def __init__(
+        self, X_train_file, y_train_file, X_test_file, y_test_file, sample_fraction=1.0
+    ):
         """
         Initializes the LSTMModelTrainer class.
 
@@ -17,6 +19,7 @@ class LSTMModelTrainer:
             y_train_file (str): Path to the training target values (.npy file).
             X_test_file (str): Path to the testing input sequences (.npy file).
             y_test_file (str): Path to the testing target values (.npy file).
+            sample_fraction (float): Fraction of data to use for training and testing (default is 1.0).
 
         This class is responsible for building, training, and testing an LSTM model, as well as visualizing the predictions.
         """
@@ -24,6 +27,17 @@ class LSTMModelTrainer:
         self.y_train = np.load(y_train_file)
         self.X_test = np.load(X_test_file)
         self.y_test = np.load(y_test_file)
+
+        # Use only a fraction of the data if specified
+        if sample_fraction < 1.0:
+            train_size = int(len(self.X_train) * sample_fraction)
+            test_size = int(len(self.X_test) * sample_fraction)
+            self.X_train = self.X_train[:train_size]
+            self.y_train = self.y_train[:train_size]
+            self.X_test = self.X_test[:test_size]
+            self.y_test = self.y_test[:test_size]
+
+        self.sample_fraction = sample_fraction
         self.model = None
 
     def build_model(self):
@@ -172,7 +186,9 @@ if __name__ == "__main__":
     X_test_file = "app/ml/data_processed/AAPL/stock/lstm_ready/X.npy"
     y_test_file = "app/ml/data_processed/AAPL/stock/lstm_ready/y.npy"
 
-    trainer = LSTMModelTrainer(X_train_file, y_train_file, X_test_file, y_test_file)
+    trainer = LSTMModelTrainer(
+        X_train_file, y_train_file, X_test_file, y_test_file, sample_fraction=0.1
+    )
     trainer.build_model().train_model().evaluate_model()
     trainer.save_model()
     trainer.calculate_accuracies()

@@ -63,9 +63,11 @@ class StockDataHandler:
 
 # Example usage:
 if __name__ == "__main__":
-    technical_file = "app/ml/data/AAPL/technical_indicators/technical_indicators_1h.csv"
+    technical_file = (
+        "app/ml/data/AAPL/technical_indicators/technical_indicators_merged_3d.csv"
+    )
     technical_sentiment_file = (
-        "app/ml/data/AAPL/technical_sentimental/analyzed_data_1h.csv"
+        "app/ml/data/AAPL/technical_sentimental/technical_sentimental_merged_3d.csv"
     )
 
     merger = StockDataHandler(technical_file, technical_sentiment_file)
