@@ -12,12 +12,12 @@ class DataStandardizer:
         self.numeric_columns = []
         self.boolean_columns = []
         self.categorical_columns = []
-        self.datetime_column = "Datetime"
+        self.datetime_column = "timestamp"
         self.standardized_data = None
 
     def load_data(self):
         """Loads the CSV file into a DataFrame."""
-        self.data = pd.read_csv(self.input_file, index_col=0)
+        self.data = pd.read_csv(self.input_file, low_memory=False)
         return self
 
     def identify_columns(self):
