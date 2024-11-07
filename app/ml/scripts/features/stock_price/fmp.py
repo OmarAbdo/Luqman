@@ -132,13 +132,13 @@ class StockPriceFetcher:
                 f"Final columns in merged data: {all_data.columns.tolist()}"
             )  # Print header row for debugging purposes
             all_data.sort_values(by="timestamp", inplace=True)
-        self.save_data_to_csv(all_data, f"{self.ticker}_{self.interval}_paginated")
+        self.save_data_to_csv(all_data, f"{self.ticker}_{self.interval}_raw")
 
 
 # Example usage:
 if __name__ == "__main__":
     ticker = "AAPL"
-    interval = "4hour"  # Options: '1min', '5min', '15min', '30min', '1hour', '4hour'
+    interval = "5min"  # Options: '1min', '5min', '15min', '30min', '1hour', '4hour'
     pagination = 30  # Fetch 30 pages of historical data (approx. 5 years)
     output_path = "app/ml/data/AAPL/stock"
     api_key = "hOpyd96KeA4y9jBSh1VV8J7c7g9RzwVH"  # Replace with your actual Financial Modeling Prep API key

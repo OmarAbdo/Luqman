@@ -187,7 +187,7 @@ if __name__ == "__main__":
     y_test_file = "app/ml/data_processed/AAPL/stock/lstm_ready/y.npy"
 
     trainer = LSTMModelTrainer(
-        X_train_file, y_train_file, X_test_file, y_test_file, sample_fraction=0.1
+        X_train_file, y_train_file, X_test_file, y_test_file, sample_fraction=1
     )
     trainer.build_model().train_model().evaluate_model()
     trainer.save_model()
