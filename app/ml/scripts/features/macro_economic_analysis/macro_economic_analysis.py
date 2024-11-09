@@ -4,7 +4,10 @@ import os
 import requests
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+from dotenv import load_dotenv
 
+# Load the .env file
+load_dotenv()
 
 class MacroeconomicDataFetcher:
     """
@@ -12,7 +15,7 @@ class MacroeconomicDataFetcher:
     """
 
     BASE_DATA_PATH = "app/ml/data"
-    COMPANY_CODE = "AAPL"
+    COMPANY_CODE = os.getenv("TICKER")
     WORLD_BANK_BASE_URL = "http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator}?format=json&date={start_year}:{end_year}&per_page=1000"
 
     INDICATORS = {

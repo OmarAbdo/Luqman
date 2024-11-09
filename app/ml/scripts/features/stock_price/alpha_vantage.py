@@ -1,9 +1,13 @@
 import requests
 import pandas as pd
 import time
-import os
 from datetime import datetime, timedelta
 from io import StringIO
+import os
+from dotenv import load_dotenv
+
+# Load the .env file
+load_dotenv()
 
 
 class StockPriceFetcher:
@@ -21,7 +25,7 @@ class StockPriceFetcher:
         Initializes the StockPriceFetcher class.
 
         Args:
-            ticker (str): The stock ticker to fetch data for (e.g., 'AAPL').
+            ticker (str): The stock ticker to fetch data for (e.g., 'SAP').
             interval (str): The interval to fetch data for (e.g., '15min', '60min', 'daily').
             pagination (int): Number of pages to fetch data for, each representing the maximum possible period for the interval.
             output_path (str): The base path for saving the fetched data.
@@ -151,10 +155,10 @@ class StockPriceFetcher:
 
 # Example usage:
 if __name__ == "__main__":
-    ticker = "AAPL"
+    ticker = os.getenv("TICKER")
     interval = "60min"
     pagination = 1  # Fetch 5 pages of historical data
-    output_path = "app/ml/data/AAPL/stock"
+    output_path = "app/ml/data/SAP/stock"
     api_key = "55I7F5OKXT1668P5"  # Replace with your actual Alpha Vantage API key
 
     fetcher = StockPriceFetcher(ticker, interval, pagination, output_path, api_key)

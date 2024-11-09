@@ -2,7 +2,10 @@ import requests
 import os
 import csv
 from datetime import datetime
+from dotenv import load_dotenv
 
+# Load the .env file
+load_dotenv()
 
 class SentimentScore:
     """
@@ -98,5 +101,5 @@ if __name__ == "__main__":
     alpha_vantage_api_key = "AOOE7AD9CPPFTQHH"
     sentiment_fetcher = SentimentScore(alpha_vantage_api_key)
 
-    ticker = "AAPL"
+    ticker = os.getenv("TICKER")
     sentiment_fetcher.get_and_save_sentiment(ticker)

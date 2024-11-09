@@ -16,3 +16,4 @@ webdriver-manager
 fake_useragent
 torch
 seaborn
+python-dotenv

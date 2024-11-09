@@ -97,9 +97,9 @@ class LSTMModelExecutor:
 
 # Example usage:
 if __name__ == "__main__":
-    model_path = "app/ml/models/AAPL_lstm_model.h5"
-    X_test_file = "app/ml/data_processed/AAPL/stock/lstm_ready/X.npy"
-    y_test_file = "app/ml/data_processed/AAPL/stock/lstm_ready/y.npy"
+    model_path = "app/ml/models/SAP_lstm_model.h5"
+    X_test_file = "app/ml/data_processed/SAP/stock/lstm_ready/X.npy"
+    y_test_file = "app/ml/data_processed/SAP/stock/lstm_ready/y.npy"
 
     executor = LSTMModelExecutor(model_path, X_test_file, y_test_file)
     executor.load_model()

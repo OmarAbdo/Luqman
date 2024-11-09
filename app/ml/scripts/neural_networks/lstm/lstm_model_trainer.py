@@ -1,10 +1,22 @@
 import numpy as np
-import os
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout, Input, Bidirectional
+from tensorflow.keras.layers import (
+    LSTM,
+    Dense,
+    Dropout,
+    Input,
+    Bidirectional,
+    BatchNormalization,
+)
+from tensorflow.keras.regularizers import l2
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+from dotenv import load_dotenv
+
+# Load the .env file
+load_dotenv()
 
 
 class LSTMModelTrainer:
@@ -43,28 +55,8 @@ class LSTMModelTrainer:
         self.X_train = np.nan_to_num(self.X_train, nan=np.nanmean(self.X_train))
         self.X_test = np.nan_to_num(self.X_test, nan=np.nanmean(self.X_test))
 
-    # def build_model(self):
-    #     self.model = Sequential()
-    #     self.model.add(Input(shape=(self.X_train.shape[1], self.X_train.shape[2])))
-    #     self.model.add(
-    #         Bidirectional(
-    #             LSTM(
-    #                 200,
-    #                 activation="tanh",
-    #                 return_sequences=True,
-    #                 kernel_regularizer=l2(0.001),
-    #             )
-    #         )
-    #     )
-    #     self.model.add(Dropout(0.2))
-    #     self.model.add(BatchNormalization())
-
-    #     self.model.add(Bidirectional(LSTM(200, activation="tanh")))
-    #     self.model.add(Dropout(0.2))
-    #     self.model.add(Dense(1))
-
-    #     self.model.compile(optimizer=Adam(learning_rate=0.0001), loss="mse")
-
+    # The commented hyperparameters are (reducing) the quality of the prediction.
+    # probably they could be more useful with future bigger and more complex datasets
     def build_model(self):
         self.model = Sequential()
         self.model.add(Input(shape=(self.X_train.shape[1], self.X_train.shape[2])))
@@ -72,16 +64,31 @@ class LSTMModelTrainer:
             Bidirectional(
                 LSTM(
                     100,
-                    activation="relu",
+                    activation="tanh",
+                    # return_sequences=True,
+                    # kernel_regularizer=l2(0.001),
                 )
             )
         )
+        # self.model.add(BatchNormalization())
         self.model.add(Dropout(0.2))
-        self.model.add(Dense(1))
 
+        # self.model.add(
+        #     Bidirectional(
+        #         LSTM(
+        #             300,
+        #             activation="tanh",
+        #             return_sequences=False,
+        #         )
+        #     )
+        # )
+        # self.model.add(BatchNormalization())
+        # self.model.add(Dropout(0.2))
+
+        self.model.add(Dense(1))
         self.model.compile(optimizer="adam", loss="mse")
 
-    def train_model(self, epochs=50, batch_size=32):
+    def train_model(self, epochs=200, batch_size=8):
         self.model.fit(
             self.X_train,
             self.y_train,
@@ -141,5 +148,5 @@ class LSTMModelTrainer:
 
 
 if __name__ == "__main__":
-    ticker = "AAPL"
+    ticker = os.getenv("TICKER")
     trainer = LSTMModelTrainer(ticker, sample_fraction=1.0)

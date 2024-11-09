@@ -1,8 +1,12 @@
 # tests/test_data_fetch.py
 import unittest
-import os
 import pandas as pd
 from app.ml.scripts.data_fetch import StockPrice
+import os
+from dotenv import load_dotenv
+
+# Load the .env file
+load_dotenv()
 
 
 class TestStockPrice(unittest.TestCase):
@@ -10,7 +14,7 @@ class TestStockPrice(unittest.TestCase):
     def setUpClass(cls):
         cls.data_fetcher = StockPrice()
         cls.test_data_path = cls.data_fetcher.base_data_path
-        cls.sample_ticker = "AAPL"
+        cls.sample_ticker = os.getenv("TICKER")
 
     def test_ensure_directories_exist(self):
         """

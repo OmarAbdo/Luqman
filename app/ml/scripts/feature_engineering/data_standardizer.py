@@ -1,3 +1,11 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.impute import SimpleImputer
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 """""
 DataStandardizer Class
 
@@ -27,14 +35,6 @@ This class is responsible for standardizing a dataset containing technical and s
 
 These design choices ensure that the data is effectively transformed for machine learning, maintaining important relationships and making the dataset more suitable for LSTM models.
 """
-
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from sklearn.impute import SimpleImputer
-import os
-
-
 class DataStandardizer:
     def __init__(self, ticker: str):
         self.ticker = ticker
@@ -231,5 +231,5 @@ class DataStandardizer:
 
 
 if __name__ == "__main__":
-    ticker = "AAPL"
+    ticker = os.getenv("TICKER")
     DataStandardizer(ticker)

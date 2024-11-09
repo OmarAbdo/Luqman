@@ -3,6 +3,10 @@
 import pandas as pd
 import numpy as np
 import os
+from dotenv import load_dotenv
+
+# Load the .env file
+load_dotenv()
 
 
 class TechnicalSentimentIndicators:
@@ -236,5 +240,5 @@ class TechnicalSentimentIndicators:
 
 
 if __name__ == "__main__":
-    ticker = "AAPL"
+    ticker = os.getenv("TICKER")
     TechnicalSentimentIndicators(ticker)

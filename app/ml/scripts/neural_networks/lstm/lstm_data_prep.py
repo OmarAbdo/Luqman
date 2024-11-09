@@ -1,9 +1,12 @@
 import pandas as pd
 import numpy as np
-import os
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
+import os
+from dotenv import load_dotenv
 
+# Load the .env file
+load_dotenv()
 
 class LSTMDataPreparer:
     def __init__(
@@ -63,7 +66,7 @@ class LSTMDataPreparer:
 
 
 if __name__ == "__main__":
-    ticker = "AAPL"
+    ticker = os.getenv("TICKER")
     preparer = LSTMDataPreparer(ticker, sequence_length=60, sample_rate=0.05)
     X_train, X_test, y_train, y_test = preparer.split_data()
     print(f"Training data shape: {X_train.shape}")

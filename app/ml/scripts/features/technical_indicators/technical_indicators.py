@@ -1,6 +1,10 @@
 # scripts/features/technical_indicators.py
 import pandas as pd
 import os
+from dotenv import load_dotenv
+
+# Load the .env file
+load_dotenv()
 
 
 class TechnicalIndicators:
@@ -77,5 +81,5 @@ class TechnicalIndicators:
 
 
 if __name__ == "__main__":
-    ticker = "AAPL"
+    ticker = os.getenv("TICKER")
     TechnicalIndicators(ticker)
