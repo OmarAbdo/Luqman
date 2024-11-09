@@ -2,7 +2,7 @@ import numpy as np
 import os
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout, Input
+from tensorflow.keras.layers import LSTM, Dense, Dropout, Input, Bidirectional
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -43,13 +43,37 @@ class LSTMModelTrainer:
         self.X_train = np.nan_to_num(self.X_train, nan=np.nanmean(self.X_train))
         self.X_test = np.nan_to_num(self.X_test, nan=np.nanmean(self.X_test))
 
+    # def build_model(self):
+    #     self.model = Sequential()
+    #     self.model.add(Input(shape=(self.X_train.shape[1], self.X_train.shape[2])))
+    #     self.model.add(
+    #         Bidirectional(
+    #             LSTM(
+    #                 200,
+    #                 activation="tanh",
+    #                 return_sequences=True,
+    #                 kernel_regularizer=l2(0.001),
+    #             )
+    #         )
+    #     )
+    #     self.model.add(Dropout(0.2))
+    #     self.model.add(BatchNormalization())
+
+    #     self.model.add(Bidirectional(LSTM(200, activation="tanh")))
+    #     self.model.add(Dropout(0.2))
+    #     self.model.add(Dense(1))
+
+    #     self.model.compile(optimizer=Adam(learning_rate=0.0001), loss="mse")
+
     def build_model(self):
         self.model = Sequential()
         self.model.add(Input(shape=(self.X_train.shape[1], self.X_train.shape[2])))
         self.model.add(
-            LSTM(
-                50,
-                activation="relu",
+            Bidirectional(
+                LSTM(
+                    100,
+                    activation="relu",
+                )
             )
         )
         self.model.add(Dropout(0.2))
