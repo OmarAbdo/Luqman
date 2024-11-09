@@ -2,8 +2,11 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+from dotenv import load_dotenv
 
-
+# Load the .env file
+load_dotenv()
 class LSTMModelExecutor:
     def __init__(self, model_path, X_test_file, y_test_file):
         """
@@ -97,9 +100,10 @@ class LSTMModelExecutor:
 
 # Example usage:
 if __name__ == "__main__":
-    model_path = "app/ml/models/SAP_lstm_model.h5"
-    X_test_file = "app/ml/data_processed/SAP/stock/lstm_ready/X.npy"
-    y_test_file = "app/ml/data_processed/SAP/stock/lstm_ready/y.npy"
+    ticker = os.getenv("TICKER")
+    model_path = f"app/ml/models/{ticker}_lstm_model.keras"
+    X_test_file = f"app/ml/data_processed/{ticker}/stock/lstm_ready/X.npy"
+    y_test_file = f"app/ml/data_processed/{ticker}/stock/lstm_ready/y.npy"
 
     executor = LSTMModelExecutor(model_path, X_test_file, y_test_file)
     executor.load_model()

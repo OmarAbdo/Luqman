@@ -144,7 +144,7 @@ if __name__ == "__main__":
     ticker = os.getenv("TICKER")
     interval = "5min"  # Options: '1min', '5min', '15min', '30min', '1hour', '4hour'
     pagination = 30  # Fetch 30 pages of historical data (approx. 5 years)
-    output_path = "app/ml/data/SAP/stock"
+    output_path = f"app/ml/data/{ticker}/stock"
     api_key = "hOpyd96KeA4y9jBSh1VV8J7c7g9RzwVH"  # Replace with your actual Financial Modeling Prep API key
 
     fetcher = StockPriceFetcher(ticker, interval, pagination, output_path, api_key)

@@ -158,7 +158,7 @@ if __name__ == "__main__":
     ticker = os.getenv("TICKER")
     interval = "60min"
     pagination = 1  # Fetch 5 pages of historical data
-    output_path = "app/ml/data/SAP/stock"
+    output_path = f"app/ml/data/{ticker}/stock"
     api_key = "55I7F5OKXT1668P5"  # Replace with your actual Alpha Vantage API key
 
     fetcher = StockPriceFetcher(ticker, interval, pagination, output_path, api_key)
