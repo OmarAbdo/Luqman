@@ -102,8 +102,8 @@ class LSTMModelExecutor:
 if __name__ == "__main__":
     ticker = os.getenv("TICKER")
     model_path = f"app/ml/models/{ticker}_lstm_model.keras"
-    X_test_file = f"app/ml/data_processed/{ticker}/stock/lstm_ready/X.npy"
-    y_test_file = f"app/ml/data_processed/{ticker}/stock/lstm_ready/y.npy"
+    X_test_file = f"app/ml/data/{ticker}/stock/lstm_ready/X.npy"
+    y_test_file = f"app/ml/data/{ticker}/stock/lstm_ready/y.npy"
 
     executor = LSTMModelExecutor(model_path, X_test_file, y_test_file)
     executor.load_model()
