@@ -1,98 +1,108 @@
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import seaborn as sns
 import os
 from dotenv import load_dotenv
 
 # Load the .env file
 load_dotenv()
+
+
 class LSTMModelExecutor:
     def __init__(self, model_path, X_test_file, y_test_file):
-        """
-        Initializes the LSTMModelExecutor class.
-
-        Args:
-            model_path (str): Path to the saved LSTM model (.h5 file).
-            X_test_file (str): Path to the testing input sequences (.npy file).
-            y_test_file (str): Path to the testing target values (.npy file).
-
-        This class is responsible for loading a saved LSTM model, making predictions, and visualizing the results.
-        """
         self.model_path = model_path
         self.X_test = np.load(X_test_file)
         self.y_test = np.load(y_test_file)
         self.model = None
+        self.sequence_length = None
+
+        # Debug prints
+        print("X_test shape:", self.X_test.shape)
+        print("y_test shape:", self.y_test.shape)
 
     def load_model(self):
-        """
-        Loads the saved LSTM model from the specified path.
-
-        From a user perspective:
-        - This method loads a trained model so that it can be used for predictions.
-
-        From a technical perspective:
-        - Uses TensorFlow's `load_model()` function to load the model.
-        """
         self.model = tf.keras.models.load_model(self.model_path, compile=False)
         self.model.compile(optimizer="adam", loss=tf.keras.losses.MeanSquaredError())
+        self.sequence_length = self.X_test.shape[1]
         print(f"Model loaded from {self.model_path}")
         return self
 
-    def calculate_accuracies(self):
+    def predict_future(self, num_future_steps=30):
         """
-        Calculates both the original accuracy (mean squared error) and the directional accuracy.
-
-        From a user perspective:
-        - This method calculates both the typical accuracy and how often the model correctly predicts the direction of price movement.
-
-        From a technical perspective:
-        - Uses `model.predict()` to generate predictions and calculates both mean squared error and directional accuracy.
+        Predicts future values using the last known sequence.
         """
-        predictions = self.model.predict(self.X_test)
+        last_sequence = self.X_test[-1].copy()  # Shape: (sequence_length, num_features)
+        future_predictions = []
 
-        # Original MSE-based Accuracy
-        mse = np.mean((self.y_test.flatten() - predictions.flatten()) ** 2)
-        print(f"Mean Squared Error: {mse:.2f}")
+        for _ in range(num_future_steps):
+            # Prepare input for prediction (batch_size=1)
+            input_sequence = last_sequence.reshape(1, self.sequence_length, -1)
+            next_pred = self.model.predict(input_sequence, verbose=0)[0]
 
-        # Directional Accuracy
-        actual_directions = np.diff(self.y_test.flatten()) > 0
-        predicted_directions = np.diff(predictions.flatten()) > 0
+            # If the model output is a scalar
+            if next_pred.shape == ():
+                next_pred = np.array([next_pred])
 
-        correct_directions = np.sum(actual_directions == predicted_directions)
-        directional_accuracy = correct_directions / len(actual_directions) * 100
+            future_predictions.append(next_pred[0])
 
-        print(f"Directional Accuracy: {directional_accuracy:.2f}%")
-        return mse, directional_accuracy
+            # Update the last_sequence with the new prediction
+            # Shift the sequence to the left and append the new prediction
+            last_sequence = np.roll(last_sequence, -1, axis=0)
+            # Replace the last time step with the new prediction
+            # Assuming the prediction corresponds to the target feature at a specific index
+            target_feature_index = 0  # Adjust this index as per your data
+            last_sequence[-1, target_feature_index] = next_pred[0]
 
-    def predict_and_plot(self):
+            # Optionally, keep other features constant or update them as needed
+            # For now, we'll keep other features unchanged
+
+        return np.array(future_predictions)
+
+    def plot_with_future(self, num_future_steps=30):
         """
-        Makes predictions using the test set and plots the predicted vs actual values in a user-friendly way.
-
-        From a user perspective:
-        - This method visualizes how well the model's predictions match the actual values.
-
-        From a technical perspective:
-        - Uses the trained model to predict values for the test set and plots the predicted vs actual values using Seaborn for a more readable visualization.
+        Plots historical data along with future predictions using direct matplotlib plotting.
         """
-        predictions = self.model.predict(self.X_test)
+        # Get predictions on test data
+        historical_predictions = self.model.predict(self.X_test).flatten()
+        future_predictions = self.predict_future(num_future_steps)
+
+        # Debug prints
+        print("Historical predictions shape:", historical_predictions.shape)
+        print("Future predictions shape:", future_predictions.shape)
+
+        # Create indices for plotting
+        total_length = len(self.y_test) + num_future_steps
+        x_indices = np.arange(total_length)
+
+        # Combine actual and future values
+        y_actual = self.y_test.flatten()
+        y_combined = np.concatenate([y_actual, [np.nan] * num_future_steps])
+
+        # Combine historical and future predictions
+        y_pred = np.concatenate([historical_predictions, future_predictions])
 
         plt.figure(figsize=(15, 8))
-        sns.lineplot(
-            x=range(len(self.y_test)),
-            y=self.y_test.flatten(),
-            label="Actual Values",
-            color="blue",
+
+        # Plot actual values
+        plt.plot(x_indices[: len(y_actual)], y_actual, label="Actual", color="blue")
+
+        # Plot historical predictions
+        plt.plot(
+            x_indices[: len(historical_predictions)],
+            historical_predictions,
+            label="Historical Predictions",
+            color="green",
         )
-        sns.lineplot(
-            x=range(len(predictions)),
-            y=predictions.flatten(),
-            label="Predicted Values",
+
+        # Plot future predictions
+        plt.plot(
+            x_indices[len(historical_predictions) :],
+            future_predictions,
+            "--",
+            label="Future Predictions",
             color="red",
         )
-        plt.xlabel("Time")
-        plt.ylabel("Close Price")
-        plt.title("Actual vs Predicted Close Price (Line Chart)")
+
         plt.legend()
         plt.grid(True)
         plt.show()
@@ -107,5 +117,15 @@ if __name__ == "__main__":
 
     executor = LSTMModelExecutor(model_path, X_test_file, y_test_file)
     executor.load_model()
-    executor.calculate_accuracies()
-    executor.predict_and_plot()
+
+    # Print shapes before plotting
+    print("\nBefore calling plot_with_future:")
+    print("X_test final shape:", executor.X_test.shape)
+    print("y_test final shape:", executor.y_test.shape)
+
+    try:
+        executor.plot_with_future(num_future_steps=30)
+    except Exception as e:
+        print("\nError occurred:")
+        print(e)
+        print("\nError type:", type(e))
