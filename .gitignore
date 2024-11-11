@@ -2,3 +2,6 @@ venv
 app/ml/data/**
 app/ml/training_data/**
 app/ml/data_processed/**
+notes.txt
+.env
+app/ml/models/**

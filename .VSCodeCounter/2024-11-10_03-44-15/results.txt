@@ -1,0 +1,83 @@
+Date : 2024-11-10 03:44:15
+Directory : d:\Freelance\Software - reborn\Github\3 Tools\Luqman
+Total : 33 files,  2504 codes, 266 comments, 532 blanks, all 3302 lines
+
+Languages
++------------------+------------+------------+------------+------------+------------+
+| language         | files      | code       | comment    | blank      | total      |
++------------------+------------+------------+------------+------------+------------+
+| Python           |         28 |      2,250 |        266 |        457 |      2,973 |
+| Markdown         |          4 |        235 |          0 |         75 |        310 |
+| pip requirements |          1 |         19 |          0 |          0 |         19 |
++------------------+------------+------------+------------+------------+------------+
+
+Directories
++-----------------------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                                                          | files      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                                             |         33 |      2,504 |        266 |        532 |      3,302 |
+| . (Files)                                                                                                                                     |          3 |         65 |          0 |         31 |         96 |
+| app                                                                                                                                           |         30 |      2,439 |        266 |        501 |      3,206 |
+| app (Files)                                                                                                                                   |          2 |          8 |          1 |          9 |         18 |
+| app\controllers                                                                                                                               |          3 |         17 |          0 |          9 |         26 |
+| app\ml                                                                                                                                        |         25 |      2,414 |        265 |        483 |      3,162 |
+| app\ml (Files)                                                                                                                                |          2 |         45 |          2 |         14 |         61 |
+| app\ml\scripts                                                                                                                                |         19 |      2,050 |        256 |        414 |      2,720 |
+| app\ml\scripts\feature_engineering                                                                                                            |          1 |        201 |          6 |         29 |        236 |
+| app\ml\scripts\features                                                                                                                       |         12 |      1,281 |         89 |        255 |      1,625 |
+| app\ml\scripts\features (Files)                                                                                                               |          1 |         19 |          0 |         11 |         30 |
+| app\ml\scripts\features\fundamental_analysis                                                                                                  |          3 |        388 |         46 |         83 |        517 |
+| app\ml\scripts\features\macro_economic_analysis                                                                                               |          2 |        170 |          6 |         25 |        201 |
+| app\ml\scripts\features\sentiment_score                                                                                                       |          1 |         84 |          4 |         18 |        106 |
+| app\ml\scripts\features\stock_price                                                                                                           |          3 |        352 |         17 |         71 |        440 |
+| app\ml\scripts\features\technical_indicators                                                                                                  |          1 |         65 |          6 |         15 |         86 |
+| app\ml\scripts\features\technical_sentiment_indicators                                                                                        |          1 |        203 |         10 |         32 |        245 |
+| app\ml\scripts\neural_networks                                                                                                                |          6 |        568 |        161 |        130 |        859 |
+| app\ml\scripts\neural_networks\han                                                                                                            |          1 |        172 |         37 |         27 |        236 |
+| app\ml\scripts\neural_networks\lstm                                                                                                           |          5 |        396 |        124 |        103 |        623 |
+| app\ml\tests                                                                                                                                  |          4 |        319 |          7 |         55 |        381 |
+| app\ml\tests (Files)                                                                                                                          |          1 |         74 |          2 |         11 |         87 |
+| app\ml\tests\features                                                                                                                         |          3 |        245 |          5 |         44 |        294 |
+| app\ml\tests\features (Files)                                                                                                                 |          1 |         48 |          4 |          9 |         61 |
+| app\ml\tests\features\fundamental_analysis                                                                                                    |          2 |        197 |          1 |         35 |        233 |
++-----------------------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-----------------------------------------------------------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+
+| filename                                                                                                                                      | language         | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app.py                                                                                   | Python           |          4 |          0 |          3 |          7 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\__init__.py                                                                          | Python           |          8 |          1 |          8 |         17 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\config.py                                                                            | Python           |          0 |          0 |          1 |          1 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\controllers\__init__.py                                                              | Python           |          0 |          0 |          1 |          1 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\controllers\hello_controller.py                                                      | Python           |          7 |          0 |          4 |         11 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\controllers\stock_controller.py                                                      | Python           |         10 |          0 |          4 |         14 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\config.py                                                                         | Python           |          0 |          0 |          1 |          1 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\main.py                                                                           | Python           |         45 |          2 |         13 |         60 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\feature_engineering\data_standardizer.py                                  | Python           |        201 |          6 |         29 |        236 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\fundamental_analysis\financial_metrics.py                        | Python           |        115 |         33 |         43 |        191 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\fundamental_analysis\financial_metrics_status.md                 | Markdown         |         39 |          0 |          7 |         46 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\fundamental_analysis\fundamental_analysis.py                     | Python           |        234 |         13 |         33 |        280 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\macro_economic_analysis\__init__.py                              | Python           |          0 |          0 |          1 |          1 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\macro_economic_analysis\macro_economic_analysis.py               | Python           |        170 |          6 |         24 |        200 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\readme.md                                                        | Markdown         |         19 |          0 |         11 |         30 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\sentiment_score\sentiment_score.py                               | Python           |         84 |          4 |         18 |        106 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\stock_price\alpha_vantage.py                                     | Python           |        136 |          8 |         27 |        171 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\stock_price\fmp.py                                               | Python           |        125 |          4 |         23 |        152 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\stock_price\yfinance.py                                          | Python           |         91 |          5 |         21 |        117 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\technical_indicators\technical_indicators.py                     | Python           |         65 |          6 |         15 |         86 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\technical_sentiment_indicators\technical_sentiment_indicators.py | Python           |        203 |         10 |         32 |        245 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\han\han_model.py                                          | Python           |        172 |         37 |         27 |        236 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\lstm\lstm_data_prep.py                                    | Python           |         62 |          1 |         11 |         74 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\lstm\lstm_hyperparamter_search.py                         | Python           |          0 |        101 |         19 |        120 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\lstm\lstm_model_executer.py                               | Python           |         87 |          4 |         21 |        112 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\lstm\lstm_model_trainer.py                                | Python           |        112 |         18 |         23 |        153 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\lstm\readme.md                                            | Markdown         |        135 |          0 |         29 |        164 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\tests\features\fundamental_analysis\test_financial_metrics.py                     | Python           |         94 |          0 |         17 |        111 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\tests\features\fundamental_analysis\test_fundamental_analysis.py                  | Python           |        103 |          1 |         18 |        122 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\tests\features\test_technical_indicators.py                                       | Python           |         48 |          4 |          9 |         61 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\tests\test_data_fetching.py                                                       | Python           |         74 |          2 |         11 |         87 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\readme.md                                                                                | Markdown         |         42 |          0 |         28 |         70 |
+| d:\Freelance\Software - reborn\Github\3 Tools\Luqman\requirements.txt                                                                         | pip requirements |         19 |          0 |          0 |         19 |
+| Total                                                                                                                                         |                  |      2,504 |        266 |        532 |      3,302 |
++-----------------------------------------------------------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+

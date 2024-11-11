@@ -3,8 +3,12 @@ import yfinance as yf
 import pandas as pd
 import requests
 import os
+from dotenv import load_dotenv
+
+# Load the .env file
 import sys
 
+load_dotenv()
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from features.fundamental_analysis.financial_metrics import (
@@ -61,7 +65,7 @@ class FundamentalAnalysis:
     """
 
     def __init__(self):
-        self.ticker = "AAPL"
+        self.ticker = os.getenv("TICKER")
         self.data = None
         self.financial_data = {}
         self.data_path = os.path.join("app/ml/data", self.ticker, "fundamental")
