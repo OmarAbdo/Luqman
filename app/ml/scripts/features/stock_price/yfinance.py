@@ -2,12 +2,18 @@
 import yfinance as yf
 import pandas as pd
 import time
-import os
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
+
+# Load the .env file
+load_dotenv()
 
 
 class StockPrice:
     """
+    !WARNING: THIS IMPLEMENTATION IS DEPRECATED
+    
     A class responsible for fetching stock, competitor, and market index data
     for LSTM model training and technical analysis, following SOLID principles.
 
@@ -24,7 +30,7 @@ class StockPrice:
 
     FETCH_INTERVAL = 15  # Frequency to fetch data (in minutes)
     TECH_SECTOR_ETF = "XLK"  # Technology Select Sector SPDR Fund
-    TARGET_TICKER = "AAPL"  # Main target ticker for analysis
+    TARGET_TICKER = os.getenv("TICKER")  # Main target ticker for analysis
     COMPETITORS = ["MSFT", "GOOG", "AMZN"]  # Competitor tickers for analysis
     MARKET_INDEXES = ["^GSPC", "^IXIC"]  # Major market index tickers
     HOURLY_LIMIT_PERIOD = "2y"  # Limit for hourly data fetching (maximum period)
@@ -34,7 +40,7 @@ class StockPrice:
     MINUTE_LIMIT_PERIOD = "1mo"  # Limit for 15-minute data fetching (maximum period)
 
     def __init__(self):
-        self.base_data_path = os.path.join("app/ml/data/", self.TARGET_TICKER, 'stock')
+        self.base_data_path = os.path.join("app/ml/data/", self.TARGET_TICKER, "stock")
         self.ensure_directories_exist()
 
     def ensure_directories_exist(self):
@@ -70,7 +76,7 @@ class StockPrice:
 
     def fetch_target_stock_data(self):
         """
-        Fetches data for the main target stock (AAPL) for different timeframes.
+        Fetches data for the main target stock (SAP) for different timeframes.
         """
         intervals = [
             ("15m", self.MINUTE_LIMIT_PERIOD),  # 15-minute interval for last 1 month
