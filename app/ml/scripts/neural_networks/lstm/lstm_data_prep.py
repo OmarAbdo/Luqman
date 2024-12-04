@@ -78,7 +78,7 @@ class LSTMDataPreparer:
 
 if __name__ == "__main__":
     ticker = os.getenv("TICKER")
-    preparer = LSTMDataPreparer(ticker, sequence_length=60, sample_rate=0.05)
+    preparer = LSTMDataPreparer(ticker, sequence_length=780, sample_rate=1.0)
     X_train, X_test, y_train, y_test = preparer.split_data()
     print(f"Training data shape: {X_train.shape}")
     print(f"Testing data shape: {X_test.shape}")

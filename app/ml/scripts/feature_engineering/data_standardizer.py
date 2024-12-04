@@ -6,6 +6,7 @@ import os
 import joblib
 import json
 from dotenv import load_dotenv
+import matplotlib.pyplot as plt  # Added import for plotting
 
 load_dotenv()
 
@@ -307,8 +308,62 @@ class DataStandardizer:
             f"Feature names saved to {os.path.join(self.scaler_directory, 'feature_names.json')}"
         )
 
+    # Added method to inverse transform data
+    def inverse_transform_data(self):
+        """Inverse transforms the scaled data back to original scale."""
+        # Load scaler information
+        with open(os.path.join(self.scaler_directory, "scaler_info.json"), "r") as f:
+            scalers_info = json.load(f)
+
+        # Load the scaled data
+        scaled_data = pd.read_csv(self.output_file, low_memory=False)
+
+        # Apply inverse transformations
+        data = scaled_data.copy()
+        for column, scaler_info in scalers_info.items():
+            method = scaler_info["method"]
+            if method == "log_scaling":
+                # Inverse of np.log1p is np.expm1
+                data[column] = np.expm1(data[column])
+            elif method in ["minmax", "standard"]:
+                # Load the scaler
+                scaler_file = scaler_info["scaler_file"]
+                scaler = joblib.load(os.path.join(self.scaler_directory, scaler_file))
+                # Inverse transform the column
+                data[[column]] = scaler.inverse_transform(data[[column]])
+        # Convert 'timestamp' to datetime
+        if "timestamp" in data.columns:
+            data["timestamp"] = pd.to_datetime(data["timestamp"])
+        else:
+            # If 'timestamp' was dropped earlier, restore it from original data
+            data["timestamp"] = self.original_data["timestamp"].reset_index(drop=True)
+        return data
+
+    # Added method to plot de-scaled feature
+    def plot_descaled_feature(self, feature_name):
+        """Plots the de-scaled feature over time."""
+        # Get the de-scaled data
+        data = self.inverse_transform_data()
+
+        # Check if the feature exists
+        if feature_name not in data.columns:
+            print(f"Feature '{feature_name}' not found in data.")
+            return
+
+        # Plot the feature over time
+        plt.figure(figsize=(12, 6))
+        plt.plot(data["timestamp"], data[feature_name], label=feature_name)
+        plt.xlabel("Time")
+        plt.ylabel(feature_name)
+        plt.title(f"{self.ticker} {feature_name} Over Time")
+        plt.legend()
+        plt.show()
+
 
 if __name__ == "__main__":
     ticker = os.getenv("TICKER")
     standardizer = DataStandardizer(ticker)
     standardizer.standardize_data()
+
+    # Plot the de-scaled 'close' price
+    standardizer.plot_descaled_feature("close")
