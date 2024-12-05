@@ -1,0 +1,35 @@
+"filename", "language", "Python", "pip requirements", "Markdown", "comment", "blank", "total"
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app.py", "Python", 4, 0, 0, 0, 3, 7
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\__init__.py", "Python", 8, 0, 0, 1, 8, 17
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\config.py", "Python", 0, 0, 0, 0, 1, 1
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\controllers\__init__.py", "Python", 0, 0, 0, 0, 1, 1
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\controllers\hello_controller.py", "Python", 7, 0, 0, 0, 4, 11
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\controllers\stock_controller.py", "Python", 10, 0, 0, 0, 4, 14
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\config.py", "Python", 0, 0, 0, 0, 1, 1
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\main.py", "Python", 45, 0, 0, 2, 13, 60
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\feature_engineering\data_standardizer.py", "Python", 201, 0, 0, 6, 29, 236
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\fundamental_analysis\financial_metrics.py", "Python", 115, 0, 0, 33, 43, 191
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\fundamental_analysis\financial_metrics_status.md", "Markdown", 0, 0, 39, 0, 7, 46
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\fundamental_analysis\fundamental_analysis.py", "Python", 234, 0, 0, 13, 33, 280
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\macro_economic_analysis\__init__.py", "Python", 0, 0, 0, 0, 1, 1
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\macro_economic_analysis\macro_economic_analysis.py", "Python", 170, 0, 0, 6, 24, 200
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\readme.md", "Markdown", 0, 0, 19, 0, 11, 30
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\sentiment_score\sentiment_score.py", "Python", 84, 0, 0, 4, 18, 106
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\stock_price\alpha_vantage.py", "Python", 136, 0, 0, 8, 27, 171
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\stock_price\fmp.py", "Python", 125, 0, 0, 4, 23, 152
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\stock_price\yfinance.py", "Python", 91, 0, 0, 5, 21, 117
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\technical_indicators\technical_indicators.py", "Python", 65, 0, 0, 6, 15, 86
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\features\technical_sentiment_indicators\technical_sentiment_indicators.py", "Python", 203, 0, 0, 10, 32, 245
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\han\han_model.py", "Python", 172, 0, 0, 37, 27, 236
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\lstm\lstm_data_prep.py", "Python", 62, 0, 0, 1, 11, 74
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\lstm\lstm_hyperparamter_search.py", "Python", 0, 0, 0, 101, 19, 120
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\lstm\lstm_model_executer.py", "Python", 87, 0, 0, 4, 21, 112
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\lstm\lstm_model_trainer.py", "Python", 112, 0, 0, 18, 23, 153
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\scripts\neural_networks\lstm\readme.md", "Markdown", 0, 0, 135, 0, 29, 164
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\tests\features\fundamental_analysis\test_financial_metrics.py", "Python", 94, 0, 0, 0, 17, 111
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\tests\features\fundamental_analysis\test_fundamental_analysis.py", "Python", 103, 0, 0, 1, 18, 122
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\tests\features\test_technical_indicators.py", "Python", 48, 0, 0, 4, 9, 61
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\app\ml\tests\test_data_fetching.py", "Python", 74, 0, 0, 2, 11, 87
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\readme.md", "Markdown", 0, 0, 42, 0, 28, 70
+"d:\Freelance\Software - reborn\Github\3 Tools\Luqman\requirements.txt", "pip requirements", 0, 19, 0, 0, 0, 19
+"Total", "-", 2250, 19, 235, 266, 532, 3302
