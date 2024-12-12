@@ -5,6 +5,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.regularizers import l2
 
 
 class LSTMModelTrainer:
@@ -87,7 +88,9 @@ class LSTMModelTrainer:
         )
 
         print("Data loaded:")
-        print(f"X_train shape: {self.X_train.shape}, y_train shape: {self.y_train.shape}")
+        print(
+            f"X_train shape: {self.X_train.shape}, y_train shape: {self.y_train.shape}"
+        )
         print(f"X_test shape: {self.X_test.shape}, y_test shape: {self.y_test.shape}")
 
     def build_model(self):
@@ -100,12 +103,15 @@ class LSTMModelTrainer:
                 self.units,
                 input_shape=(self.X_train.shape[1], self.X_train.shape[2]),
                 return_sequences=True,
+                kernel_regularizer=l2(0.001),
             )
         )
         model.add(Dropout(self.dropout))
-        model.add(LSTM(self.units))
+        model.add(LSTM(self.units, kernel_regularizer=l2(0.001)))
         model.add(Dropout(self.dropout))
-        model.add(Dense(1))  # Predicting a single value (close price)
+        model.add(
+            Dense(units=1, kernel_regularizer=l2(0.001))  # Output layer
+        )  # Predicting a single value (close price)
 
         optimizer = Adam(learning_rate=self.learning_rate)
         model.compile(loss="mean_squared_error", optimizer=optimizer, metrics=["mae"])
