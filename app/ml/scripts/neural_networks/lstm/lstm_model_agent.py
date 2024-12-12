@@ -63,22 +63,35 @@ class ModelAgent:
         # Initialize plotter
         self.plotter = DataPlotter(scaler_directory=self.scaler_directory)
 
+
     def _calculate_metrics(self, actual: np.ndarray, predicted: np.ndarray):
         """
-        Calculate regression accuracy metrics on the original scale.
+        Calculate regression accuracy metrics and directional accuracy on the original scale.
 
         Args:
-            actual (np.ndarray): Actual values (inverse transformed)
-            predicted (np.ndarray): Predicted values (inverse transformed)
+            actual (np.ndarray): Actual values (inverse transformed).
+            predicted (np.ndarray): Predicted values (inverse transformed).
 
         Returns:
-            dict: Dictionary of metrics: MAE, MSE, RMSE
+            dict: Dictionary of metrics: MAE, MSE, RMSE, Directional Accuracy (%).
         """
+        # Calculate regression metrics
         mae = np.mean(np.abs(actual - predicted))
         mse = np.mean((actual - predicted) ** 2)
         rmse = np.sqrt(mse)
 
-        return {"MAE": mae, "MSE": mse, "RMSE": rmse}
+        # Calculate directional accuracy
+        actual_directions = np.sign(np.diff(actual))
+        predicted_directions = np.sign(np.diff(predicted))
+        directional_matches = actual_directions == predicted_directions
+        directional_accuracy = np.mean(directional_matches) * 100
+
+        return {
+            "MAE": mae,
+            "MSE": mse,
+            "RMSE": rmse,
+            "Directional Accuracy (%)": directional_accuracy,
+        }
 
     def test_model(self):
         """

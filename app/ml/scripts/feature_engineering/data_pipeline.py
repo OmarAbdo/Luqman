@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
     pipeline = MainPipeline(
         ticker=ticker,
-        sequence_length=60,  # Adjust as needed
+        sequence_length=90,  # default is 60
         test_size=0.2,  # 80% train, 20% test
         sample_rate=1.0,  # Use full dataset; adjust if sampling is needed
     )

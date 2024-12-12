@@ -191,7 +191,7 @@ if __name__ == "__main__":
         ticker=ticker,
         data_directory="app/ml/data",
         model_directory="app/ml/models",
-        units=64,
+        units=256,
         dropout=0.3,
         learning_rate=0.001,
         epochs=10,
