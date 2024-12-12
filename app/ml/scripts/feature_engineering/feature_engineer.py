@@ -80,6 +80,10 @@ class FeatureEngineer:
         data["Hour"] = data[datetime_column].dt.hour
         data["Minute"] = data[datetime_column].dt.minute
         data["DayOfWeek"] = data[datetime_column].dt.weekday
+
+        # Retain the original timestamp column for sequence extraction
+        original_timestamps = data[datetime_column]
+
         data.drop(datetime_column, axis=1, inplace=True)
 
         # Normalize the new datetime columns
@@ -95,10 +99,8 @@ class FeatureEngineer:
         data = pd.get_dummies(
             data, columns=["DayOfWeek"], prefix="DayOfWeek", drop_first=True
         )
-        # Ensure DayOfWeek columns are of numeric type
-        for col in data.columns:
-            if col.startswith("DayOfWeek_"):
-                data[col] = data[col].astype(int)
 
-        print(f"Datetime components extracted and normalized from '{datetime_column}'.")
+        # Reattach the original timestamps
+        data["timestamp"] = original_timestamps
+
         return data

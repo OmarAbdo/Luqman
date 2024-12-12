@@ -100,6 +100,9 @@ class MainPipeline:
         train_data_scaled, test_data_scaled = self.scaler.scale_train_test(
             train_data, test_data, target_column="close"
         )
+        # Reattach timestamp to the scaled datasets
+        train_data_scaled['timestamp'] = train_data['timestamp'].values
+        test_data_scaled['timestamp'] = test_data['timestamp'].values
         print("Data scaling completed.")
 
         # Step 6: Prepare Sequences

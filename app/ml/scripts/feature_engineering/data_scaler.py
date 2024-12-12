@@ -1,13 +1,15 @@
 # File: DataScaler.py
 
 import pandas as pd
+import numpy as np
 import os
 import joblib
 import json
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
-# The DataScaler class is responsible for scaling the training and testing data. 
-# It uses MinMaxScaler for feature columns and StandardScaler for the target column (close). 
+
+# The DataScaler class is responsible for scaling the training and testing data.
+# It uses MinMaxScaler for feature columns and StandardScaler for the target column (close).
 # The scalers are saved to disk to ensure consistent scaling during model evaluation and prediction.
 class DataScaler:
     """Class responsible for scaling data."""
@@ -27,10 +29,11 @@ class DataScaler:
         self, train_data: pd.DataFrame, test_data: pd.DataFrame, target_column: str
     ):
         """
-        Scales the training and testing data.
+        Scales the training and testing data while preserving non-scalable columns like timestamps.
 
         - Scales features using MinMaxScaler.
-        - Scales target using StandardScaler.
+        - Scales the target column using StandardScaler.
+        - Ensures non-numeric columns are excluded from the scaling process.
 
         Args:
             train_data (pd.DataFrame): The training DataFrame.
@@ -44,22 +47,29 @@ class DataScaler:
         feature_scaler = MinMaxScaler()
         target_scaler = StandardScaler()
 
-        # Identify feature columns (exclude target)
-        feature_columns = train_data.columns.drop(target_column)
+        # Identify feature columns (exclude target and non-numeric columns)
+        feature_columns = train_data.select_dtypes(include=[np.number]).columns.drop(
+            target_column
+        )
 
-        # Fit scaler on training features
-        train_data[feature_columns] = feature_scaler.fit_transform(
+        # Scale features
+        train_data_scaled = train_data.copy()
+        test_data_scaled = test_data.copy()
+
+        train_data_scaled[feature_columns] = feature_scaler.fit_transform(
             train_data[feature_columns]
         )
-        test_data[feature_columns] = feature_scaler.transform(
+        test_data_scaled[feature_columns] = feature_scaler.transform(
             test_data[feature_columns]
         )
 
-        # Fit scaler on training target
-        train_data[[target_column]] = target_scaler.fit_transform(
+        # Scale target column
+        train_data_scaled[[target_column]] = target_scaler.fit_transform(
             train_data[[target_column]]
         )
-        test_data[[target_column]] = target_scaler.transform(test_data[[target_column]])
+        test_data_scaled[[target_column]] = target_scaler.transform(
+            test_data[[target_column]]
+        )
 
         # Save scalers
         joblib.dump(
@@ -88,7 +98,7 @@ class DataScaler:
             json.dump(self.scalers, f)
 
         print("Data scaling completed and scalers saved.")
-        return train_data, test_data
+        return train_data_scaled, test_data_scaled
 
     def load_scalers(self):
         """
