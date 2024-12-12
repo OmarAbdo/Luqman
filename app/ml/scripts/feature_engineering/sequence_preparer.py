@@ -33,7 +33,10 @@ class SequencePreparer:
                 - X (np.ndarray): Input sequences of shape (num_samples, sequence_length, num_features).
                 - y (np.ndarray): Target values of shape (num_samples,).
         """
-        feature_columns = data.columns.drop(self.target_column)
+        feature_columns = data.columns.drop(self.target_column)        
+        # Exclude 'timestamp' so it doesn't end up in the X arrays
+        if 'timestamp' in feature_columns:
+            feature_columns = feature_columns.drop('timestamp')
         X, y = [], []
         for i in range(len(data) - self.sequence_length):
             X.append(data[feature_columns].iloc[i : i + self.sequence_length].values)
