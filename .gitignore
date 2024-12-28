@@ -5,3 +5,4 @@ app/ml/data_processed/**
 notes.txt
 .env
 app/ml/models/**
+.VSCodeCounter/
