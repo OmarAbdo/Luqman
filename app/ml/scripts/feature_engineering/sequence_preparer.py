@@ -1,12 +1,8 @@
-# File: SequencePreparer.py
-
+import sys
 import numpy as np
 import pandas as pd
 
-# Description:
-# The SequencePreparer class is responsible for transforming the scaled training and 
-# testing datasets into sequences suitable for LSTM input. It creates input 
-# sequences of a specified length (sequence_length) and their corresponding target values.
+
 class SequencePreparer:
     """Class responsible for preparing sequences for LSTM input."""
 
@@ -33,17 +29,28 @@ class SequencePreparer:
                 - X (np.ndarray): Input sequences of shape (num_samples, sequence_length, num_features).
                 - y (np.ndarray): Target values of shape (num_samples,).
         """
-        feature_columns = data.columns.drop(self.target_column)        
+        feature_columns = data.columns.drop(self.target_column)
         # Exclude 'timestamp' so it doesn't end up in the X arrays
-        if 'timestamp' in feature_columns:
-            feature_columns = feature_columns.drop('timestamp')
+        if "timestamp" in feature_columns:
+            feature_columns = feature_columns.drop("timestamp")
         X, y = [], []
-        for i in range(len(data) - self.sequence_length):
+        total_rows = len(data) - self.sequence_length
+        print(f"Total rows to process: {total_rows}")
+
+        for i in range(total_rows):
             X.append(data[feature_columns].iloc[i : i + self.sequence_length].values)
             y.append(data[self.target_column].iloc[i + self.sequence_length])
+
+            # Update progress
+            if (i + 1) % 100 == 0 or (
+                i + 1
+            ) == total_rows:  # Update every 100 rows or at the end
+                sys.stdout.write(f"\rProcessed rows: {i + 1}/{total_rows}")
+                sys.stdout.flush()
+
         X = np.array(X)
         y = np.array(y)
         print(
-            f"Created {X.shape[0]} sequences with shape {X.shape[1:]} for inputs and {y.shape} for targets."
+            f"\nCreated {X.shape[0]} sequences with shape {X.shape[1:]} for inputs and {y.shape} for targets."
         )
         return X, y

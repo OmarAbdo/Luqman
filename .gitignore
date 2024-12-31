@@ -6,3 +6,4 @@ notes.txt
 .env
 app/ml/models/**
 .VSCodeCounter/
+data/

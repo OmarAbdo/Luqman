@@ -200,7 +200,7 @@ if __name__ == "__main__":
         units=256,
         dropout=0.3,
         learning_rate=0.001,
-        epochs=10,
+        epochs=20,
         batch_size=64,
         validation_split=0.1,
         patience=3,

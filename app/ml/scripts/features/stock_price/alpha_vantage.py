@@ -1,170 +1,244 @@
+"""
+alpha_vantage_20yr_intraday.py
+
+Fetches up to 20 years of 5-minute intraday data from Alpha Vantage's updated
+TIME_SERIES_INTRADAY endpoint using month-by-month queries.
+
+Features:
+---------
+1) Uses the optional 'month=YYYY-MM' parameter to request older historical data
+   in full CSV format for each month.
+2) Loops from a user-defined start month (e.g., 2000-01) to an end month (e.g., 2019-12),
+   respecting the free-tier rate limit (5 calls/min) by sleeping 15 seconds after each call.
+3) Handles Alpha Vantage's varying column names ('time' vs. 'timestamp').
+4) Saves the final merged DataFrame to a CSV file.
+
+Limitations:
+------------
+- Data for each month is updated once per day on the free plan.
+- Realtime or 15-min delayed data requires premium.
+- The script can easily take an hour or more if you go for multiple decades of data.
+
+Usage Example:
+--------------
+1) pip install requests pandas python-dotenv
+2) Put your ALPHA_VANTAGE_API_KEY in a .env file or as an environment variable.
+3) python alpha_vantage_20yr_intraday.py
+"""
+
+import os
+import time
 import requests
 import pandas as pd
-import time
-from datetime import datetime, timedelta
 from io import StringIO
-import os
+from datetime import datetime
 from dotenv import load_dotenv
 
-# Load the .env file
 load_dotenv()
 
 
-class StockPriceFetcher:
+class AlphaVantageIntradayFetcher:
     """
-    A class responsible for fetching historical stock data for a specified ticker using Alpha Vantage API.
+    Fetches multi-month historical intraday data from Alpha Vantage's new TIME_SERIES_INTRADAY
+    endpoint using 'month=YYYY-MM'. Ideal for large multi-year data.
 
-    This class allows users to:
-    1. Fetch data for a specific stock ticker for different time intervals (15 minutes, 1 hour, daily).
-    2. Fetch historical data in pages, where each page represents a backward time interval until a user-defined limit is reached.
-    3. Pass all parameters dynamically, such as ticker, interval, and pagination.
+    Key points:
+    -----------
+    - Sleeps ~15s between calls to avoid free-tier rate limit (5 calls/min).
+    - If you have a premium plan, you may reduce or remove the sleep.
+    - Adjust 'start_yearmonth' and 'end_yearmonth' for up to 20+ years, e.g. 2000-01 to 2024-01.
     """
 
-    def __init__(self, ticker, interval, pagination, output_path, api_key):
+    def __init__(
+        self,
+        symbol: str,
+        interval: str,
+        adjusted: bool,
+        extended_hours: bool,
+        start_yearmonth: str,
+        end_yearmonth: str,
+        output_path: str,
+        api_key: str,
+    ):
         """
-        Initializes the StockPriceFetcher class.
-
         Args:
-            ticker (str): The stock ticker to fetch data for (e.g., 'SAP').
-            interval (str): The interval to fetch data for (e.g., '15min', '60min', 'daily').
-            pagination (int): Number of pages to fetch data for, each representing the maximum possible period for the interval.
-            output_path (str): The base path for saving the fetched data.
-            api_key (str): The API key for accessing Alpha Vantage.
+            symbol (str): Ticker symbol, e.g. "AAPL"
+            interval (str): '1min','5min','15min','30min','60min'
+            adjusted (bool): True to adjust for splits/dividends, False for raw data
+            extended_hours (bool): True for pre/post market data, False for regular hours only
+            start_yearmonth (str): e.g. '2000-01'
+            end_yearmonth (str): e.g. '2024-01'
+            output_path (str): Directory to save CSV
+            api_key (str): Alpha Vantage API key
         """
-        self.ticker = ticker
+        self.symbol = symbol
         self.interval = interval
-        self.pagination = pagination
+        self.adjusted = adjusted
+        self.extended_hours = extended_hours
+        self.start_yearmonth = start_yearmonth
+        self.end_yearmonth = end_yearmonth
         self.output_path = output_path
         self.api_key = api_key
-        self.ensure_directories_exist()
 
-    def ensure_directories_exist(self):
-        """
-        Ensure the necessary directories exist for storing data.
-        """
-        if not os.path.exists(self.output_path):
-            os.makedirs(self.output_path)
+        # Ensure output directory
+        os.makedirs(self.output_path, exist_ok=True)
 
-    def fetch_stock_data(self, month_param):
+        # Parse start/end months into datetime objects
+        self.start_dt = datetime.strptime(self.start_yearmonth, "%Y-%m")
+        self.end_dt = datetime.strptime(self.end_yearmonth, "%Y-%m")
+
+    def _fetch_one_month(self, yearmonth: str) -> pd.DataFrame:
         """
-        Fetches data for the given ticker at the specified interval using Alpha Vantage API.
+        Fetches one month (YYYY-MM) of intraday data (CSV).
 
         Args:
-            month_param (str): The month parameter for fetching data (e.g., '2022-11').
+            yearmonth (str): e.g. "2009-01"
 
         Returns:
-            DataFrame: A DataFrame containing the historical stock data.
+            pd.DataFrame with columns [timestamp, open, high, low, close, volume]
         """
         base_url = "https://www.alphavantage.co/query"
-        function = "TIME_SERIES_INTRADAY"
-
         params = {
-            "function": function,
-            "symbol": self.ticker,
+            "function": "TIME_SERIES_INTRADAY",
+            "symbol": self.symbol,
             "interval": self.interval,
-            "month": month_param,
-            "outputsize": "full",
-            "apikey": self.api_key,
+            "month": yearmonth,
+            "outputsize": "full",  # Entire month
+            "adjusted": str(self.adjusted).lower(),
+            "extended_hours": str(self.extended_hours).lower(),
             "datatype": "csv",
+            "apikey": self.api_key,
         }
 
-        response = requests.get(base_url, params=params)
-        if response.status_code == 200:
-            data = pd.read_csv(StringIO(response.text))
+        print(f"[DEBUG] Fetching {self.symbol} {self.interval} for {yearmonth} ...")
+        resp = requests.get(base_url, params=params)
+        if resp.status_code != 200:
+            print(f"[ERROR] HTTP {resp.status_code}: {resp.text}")
+            return pd.DataFrame()
+
+        data_str = resp.text
+        if (
+            "Error Message" in data_str
+            or "Thank you for using Alpha Vantage" in data_str
+        ):
             print(
-                f"Fetched data for {self.ticker} - Interval: {self.interval}, Month: {month_param}"
-            )
-            print(
-                f"Columns in the fetched data: {data.columns.tolist()}"
-            )  # Print header row for debugging purposes
-            return data
-        else:
-            print(
-                f"Error fetching data for {self.ticker}: {response.status_code} - {response.text}"
+                f"[WARNING] Possibly no data or usage limit issue for {yearmonth}. Skipping."
             )
             return pd.DataFrame()
 
-    def save_data_to_csv(self, data, filename):
-        """
-        Saves the fetched data to a CSV file.
+        # Parse CSV
+        df = pd.read_csv(StringIO(data_str))
+        # Typically columns might be: "time"/"timestamp", "open", "high", "low", "close", "volume"
 
-        Args:
-            data (DataFrame): The DataFrame to save.
-            filename (str): The name of the file to save the data in.
-        """
-        if not data.empty:
-            file_path = os.path.join(self.output_path, f"{filename}.csv")
-            data.to_csv(file_path, index=False)
-            print(f"Saved {file_path}")
-        else:
-            print(f"No data available to save for {filename}")
+        # Make columns lowercase to standardize
+        df.columns = [c.lower() for c in df.columns]
 
-    def fetch_paginated_data(self):
-        """
-        Fetches the historical stock data in a paginated manner, merging all fetched pages into a single DataFrame.
-        """
-        all_data = pd.DataFrame()
-        current_end = datetime.now()
-
-        for page in range(self.pagination):
-            start_date = self.get_start_date_for_interval(current_end)
+        # Accept either "time" or "timestamp"
+        if "time" in df.columns:
+            df.rename(columns={"time": "timestamp"}, inplace=True)
+        elif "timestamp" not in df.columns:
             print(
-                f"Fetching page {page + 1} for {self.interval} interval from {start_date} to {current_end}..."
+                f"[WARNING] No 'time'/'timestamp' column in {yearmonth}. Columns: {list(df.columns)}."
             )
+            return pd.DataFrame()
 
-            # Fetching data for each month between start_date and current_end
-            current_date = current_end
-            while current_date >= start_date:
-                month_param = current_date.strftime("%Y-%m")
-                data = self.fetch_stock_data(month_param)
-                if not data.empty:
-                    all_data = (
-                        pd.concat([all_data, data]) if not all_data.empty else data
-                    )
-                current_date -= timedelta(days=30)  # Move one month back
+        # Convert to datetime
+        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+        if df["timestamp"].isna().all():
+            print(f"[WARNING] 'timestamp' invalid in {yearmonth}, skipping.")
+            return pd.DataFrame()
 
-            current_end = start_date
+        # Sort ascending by time
+        df.sort_values(by="timestamp", inplace=True)
+        print(f"[DEBUG] Got {len(df)} rows for {yearmonth}.")
 
-        # Sort the data from oldest to newest
-        if not all_data.empty:
-            print(
-                f"Final columns in merged data: {all_data.columns.tolist()}"
-            )  # Print header row for debugging purposes
-            all_data.sort_values(by=all_data.columns[0], inplace=True)
-        self.save_data_to_csv(all_data, f"{self.ticker}_{self.interval}_paginated")
+        return df
 
-    def get_start_date_for_interval(self, end_date):
+    def fetch_all_months(self) -> pd.DataFrame:
         """
-        Determines the start date for the next fetch based on the interval and the given end date.
-
-        Args:
-            end_date (datetime): The end date for the current fetch.
+        Fetches each month from start_dt to end_dt inclusive.
 
         Returns:
-            datetime: The start date for the next fetch.
+            Merged DataFrame, sorted by timestamp ascending.
         """
-        if self.interval == "15min":
-            return end_date - timedelta(days=30)
-        elif self.interval == "60min":
-            return end_date - timedelta(days=730)
-        elif self.interval == "daily":
-            return end_date - timedelta(days=1825)
-        else:
-            raise ValueError(f"Unsupported interval: {self.interval}")
+        all_data = pd.DataFrame()
+
+        current_dt = self.start_dt
+        while current_dt <= self.end_dt:
+            ym_str = current_dt.strftime("%Y-%m")
+
+            # Fetch that month
+            df_month = self._fetch_one_month(ym_str)
+            if not df_month.empty:
+                if all_data.empty:
+                    all_data = df_month
+                else:
+                    all_data = pd.concat([all_data, df_month], ignore_index=True)
+
+            # Sleep to respect free-tier 5 calls/min
+            time.sleep(15)
+
+            # Increment 1 month
+            year = current_dt.year
+            month = current_dt.month
+            if month == 12:
+                year += 1
+                month = 1
+            else:
+                month += 1
+            current_dt = datetime(year, month, 1)
+
+        # Final sort and deduplicate
+        if not all_data.empty:
+            all_data.sort_values(by="timestamp", inplace=True)
+            all_data.drop_duplicates(subset=["timestamp"], inplace=True)
+
+        return all_data
+
+    def save_to_csv(self, df: pd.DataFrame, filename: str):
+        """
+        Saves DataFrame to CSV in output_path.
+
+        Args:
+            df (pd.DataFrame): Data to save
+            filename (str): Base CSV filename (no extension)
+        """
+        if df.empty:
+            print(f"[INFO] No data to save for {filename}.")
+            return
+        out_file = os.path.join(self.output_path, f"{filename}.csv")
+        df.to_csv(out_file, index=False)
+        print(f"[INFO] Saved {len(df)} rows to {out_file}")
 
 
-# Example usage:
 if __name__ == "__main__":
-    ticker = os.getenv("TICKER")
-    interval = "60min"
-    pagination = 1  # Fetch 5 pages of historical data
-    output_path = f"app/ml/data/{ticker}/stock"
-    api_key = "55I7F5OKXT1668P5"  # Replace with your actual Alpha Vantage API key
+    # Load from .env or just replace with your actual API key
+    api_key = "VSTSPYFTOA4PTD73"
 
-    fetcher = StockPriceFetcher(ticker, interval, pagination, output_path, api_key)
-    fetcher.fetch_paginated_data()
+    # Example usage: 20 years of 5-min data for AAPL, from 2003-01 to 2023-01
+    symbol = "AAPL"
+    interval = "5min"
+    adjusted = True
+    extended_hours = True
+    start_yearmonth = "2014-07"
+    end_yearmonth = "2016-07"
+    output_path = "data"
 
-# Alpha vantage API keys
-# AOOE7AD9CPPFTQHH
-# 55I7F5OKXT1668P5
-# FJ3IBD9KR7HDKVOG
+    fetcher = AlphaVantageIntradayFetcher(
+        symbol=symbol,
+        interval=interval,
+        adjusted=adjusted,
+        extended_hours=extended_hours,
+        start_yearmonth=start_yearmonth,
+        end_yearmonth=end_yearmonth,
+        output_path=output_path,
+        api_key=api_key,
+    )
+
+    # Fetch all months in the range
+    all_data = fetcher.fetch_all_months()
+
+    # Save to CSV if we got any data
+    fetcher.save_to_csv(
+        all_data, f"{symbol}_{interval}_{start_yearmonth}_{end_yearmonth}"
+    )
