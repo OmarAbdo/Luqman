@@ -11,7 +11,7 @@ import sys
 load_dotenv()
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from features.fundamental_analysis.financial_metrics import (
+from components.fundamental_analysis.financial_metrics import (
     calculate_pe,
     calculate_pb,
     calculate_ev_ebitda,

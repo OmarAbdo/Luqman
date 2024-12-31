@@ -7,7 +7,7 @@ import sys
 
 sys.path.append("D:/Freelance/Software - reborn/Github/3 Tools/Luqman")
 
-from app.ml.scripts.feature_engineering.data_plotter import (
+from app.ml.scripts.pipeline.data_plotter import (
     DataPlotter,
 )  # Assuming DataPlotter is imported as in your provided code
 
