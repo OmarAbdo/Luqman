@@ -214,7 +214,7 @@ class AlphaVantageIntradayFetcher:
 
 if __name__ == "__main__":
     # Load from .env or just replace with your actual API key
-    api_key = "7H1XQB4ZTAH7981E"
+    api_key = os.getenv("ALPHA_VANTAGE_API")
 
     # Example usage: 20 years of 5-min data for AAPL, from 2003-01 to 2023-01
     ticker = "AAPL"

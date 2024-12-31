@@ -7,3 +7,4 @@ notes.txt
 app/ml/models/**
 .VSCodeCounter/
 data/
+alpha_vantage_keys.txt
