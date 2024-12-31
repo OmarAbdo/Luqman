@@ -93,7 +93,7 @@ class ModelAgent:
             "Directional Accuracy (%)": directional_accuracy,
         }
 
-    def test_model(self):
+    def run(self):
         """
         Predict on test data, measure accuracy, and plot Actual vs. Predicted close prices.
         """
@@ -119,7 +119,7 @@ class ModelAgent:
             timestamps=self.timestamps_test,
         )
 
-    def forecast_future(self):
+    def run_forecast(self):
         """
         Forecast future steps after the last known point in test data.
 
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     os.environ["TICKER"] = ticker  # if needed
 
     tester = ModelAgent(ticker=ticker)
-    tester.test_model()
+    tester.run()
 
 
 # if __name__ == "__main__":

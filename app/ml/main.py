@@ -38,14 +38,14 @@ from scripts.neural_networks.lstm.lstm_model_trainer import LSTMModelTrainer
 from scripts.neural_networks.lstm.lstm_model_agent import ModelAgent
 
 
-class PipelineManager:
+class Main:
     """
     Manages the execution of the data processing and modeling pipeline in an OOP style.
     """
 
     def __init__(self, ticker: str, config: dict):
         """
-        Initializes the PipelineManager with the specified ticker and configuration.
+        Initializes the Main with the specified ticker and configuration.
 
         Args:
             ticker (str): Stock ticker symbol, e.g., "AAPL".
@@ -193,8 +193,8 @@ if __name__ == "__main__":
         "patience": 3,  # Early stopping patience
     }
 
-    # Create an instance of PipelineManager and run the full pipeline
-    pipeline_manager = PipelineManager(ticker=ticker, config=config)
+    # Create an instance of Main and run the full pipeline
+    pipeline_manager = Main(ticker=ticker, config=config)
     pipeline_manager.run_phase1()
     # pipeline_manager.run_phase2()
     # pipeline_manager.run_phase3()
