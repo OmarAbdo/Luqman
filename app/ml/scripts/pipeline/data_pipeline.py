@@ -1,4 +1,4 @@
-# File: MainPipeline.py
+# File: DataPipeline.py
 
 import os
 from dotenv import load_dotenv
@@ -16,13 +16,13 @@ from data_splitter import DataSplitter
 load_dotenv()
 
 # Description:
-# The MainPipeline class orchestrates the entire data processing workflow by
+# The DataPipeline class orchestrates the entire data processing workflow by
 # sequentially executing each of the smaller classes. It ensures that data is loaded,
 # cleaned, engineered, split, scaled, sequenced, and saved in the correct order,
 # maintaining the integrity of the time-series data without any randomization.
 
 
-class MainPipeline:
+class DataPipeline:
     """Main class orchestrating the data processing pipeline."""
 
     def __init__(
@@ -33,7 +33,7 @@ class MainPipeline:
         sample_rate: float = 1.0,
     ):
         """
-        Initializes the MainPipeline.
+        Initializes the DataPipeline.
 
         Args:
             ticker (str): Stock ticker symbol.
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     if not ticker:
         raise ValueError("TICKER environment variable not set.")
 
-    pipeline = MainPipeline(
+    pipeline = DataPipeline(
         ticker=ticker,
         sequence_length=90,  # default is 60
         test_size=0.2,  # 80% train, 20% test

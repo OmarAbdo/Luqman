@@ -51,7 +51,7 @@ class AlphaVantageIntradayFetcher:
 
     def __init__(
         self,
-        symbol: str,
+        ticker: str,
         interval: str,
         adjusted: bool,
         extended_hours: bool,
@@ -62,7 +62,7 @@ class AlphaVantageIntradayFetcher:
     ):
         """
         Args:
-            symbol (str): Ticker symbol, e.g. "AAPL"
+            ticker (str): Ticker ticker, e.g. "AAPL"
             interval (str): '1min','5min','15min','30min','60min'
             adjusted (bool): True to adjust for splits/dividends, False for raw data
             extended_hours (bool): True for pre/post market data, False for regular hours only
@@ -71,7 +71,7 @@ class AlphaVantageIntradayFetcher:
             output_path (str): Directory to save CSV
             api_key (str): Alpha Vantage API key
         """
-        self.symbol = symbol
+        self.ticker = ticker
         self.interval = interval
         self.adjusted = adjusted
         self.extended_hours = extended_hours
@@ -100,7 +100,7 @@ class AlphaVantageIntradayFetcher:
         base_url = "https://www.alphavantage.co/query"
         params = {
             "function": "TIME_SERIES_INTRADAY",
-            "symbol": self.symbol,
+            "symbol": self.ticker,
             "interval": self.interval,
             "month": yearmonth,
             "outputsize": "full",  # Entire month
@@ -110,7 +110,7 @@ class AlphaVantageIntradayFetcher:
             "apikey": self.api_key,
         }
 
-        print(f"[DEBUG] Fetching {self.symbol} {self.interval} for {yearmonth} ...")
+        print(f"[DEBUG] Fetching {self.ticker} {self.interval} for {yearmonth} ...")
         resp = requests.get(base_url, params=params)
         if resp.status_code != 200:
             print(f"[ERROR] HTTP {resp.status_code}: {resp.text}")
@@ -124,6 +124,7 @@ class AlphaVantageIntradayFetcher:
             print(
                 f"[WARNING] Possibly no data or usage limit issue for {yearmonth}. Skipping."
             )
+            # print(data_str)
             return pd.DataFrame()
 
         # Parse CSV
@@ -213,19 +214,19 @@ class AlphaVantageIntradayFetcher:
 
 if __name__ == "__main__":
     # Load from .env or just replace with your actual API key
-    api_key = "VSTSPYFTOA4PTD73"
+    api_key = "7H1XQB4ZTAH7981E"
 
     # Example usage: 20 years of 5-min data for AAPL, from 2003-01 to 2023-01
-    symbol = "AAPL"
+    ticker = "AAPL"
     interval = "5min"
     adjusted = True
     extended_hours = True
-    start_yearmonth = "2014-07"
-    end_yearmonth = "2016-07"
-    output_path = "data"
+    start_yearmonth = "2012-06"
+    end_yearmonth = "2014-06"
+    output_path = f"app/ml/data/{ticker}/stock/chunks"
 
     fetcher = AlphaVantageIntradayFetcher(
-        symbol=symbol,
+        ticker=ticker,
         interval=interval,
         adjusted=adjusted,
         extended_hours=extended_hours,
@@ -240,5 +241,5 @@ if __name__ == "__main__":
 
     # Save to CSV if we got any data
     fetcher.save_to_csv(
-        all_data, f"{symbol}_{interval}_{start_yearmonth}_{end_yearmonth}"
+        all_data, f"{ticker}_{interval}_{start_yearmonth}_{end_yearmonth}"
     )
