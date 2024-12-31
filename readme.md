@@ -60,10 +60,9 @@ pip install -r requirements.txt
 Run the sentiment analysis feature as an example:
 
 ```
-python app/ml/scripts/features/sentiment_analysis.py
+python app/luqman/components/sentiment_analysis.py
 ```
 
 ## Contributions
 
 Contributions to Luqman are welcome! Please feel free to raise issues or submit pull requests on GitHub to help improve this tool and make trading insights accessible to more users.
-

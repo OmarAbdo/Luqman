@@ -487,7 +487,7 @@ def fetch_earnings_transcript(symbol, api_key):
     for report in data.get('annualEarnings', []):
         transcript = report.get('earningsCallTranscript')
         if transcript:
-            transcripts.append(transcript)
+            tranappend(transcript)
     return transcripts
 
 # Example usage

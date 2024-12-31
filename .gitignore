@@ -1,10 +1,11 @@
 venv
-app/ml/data/**
-app/ml/training_data/**
-app/ml/data_processed/**
+app/luqman/data/**
+app/luqman/training_data/**
+app/luqman/data_processed/**
 notes.txt
 .env
-app/ml/models/**
+app/luqman/models/**
 .VSCodeCounter/
 data/
 alpha_vantage_keys.txt
+**/__pycache__
