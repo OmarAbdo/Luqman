@@ -23,7 +23,6 @@ class TechnicalSentimentIndicators:
         """
         self.ticker = ticker
         self.data = None
-        self.process_data()
 
     def load_data(self):
         """
@@ -188,7 +187,7 @@ class TechnicalSentimentIndicators:
         self.data["sentiment_momentum"] = self.data["ema_short"] - self.data["ema_long"]
         return self.data[["ema_short", "ema_long", "sentiment_momentum"]]
 
-    def process_data(self):
+    def run(self):
         """
         Streamline the entire process of loading data, performing analysis, and saving the output.
         """
@@ -241,4 +240,5 @@ class TechnicalSentimentIndicators:
 
 if __name__ == "__main__":
     ticker = os.getenv("TICKER")
-    TechnicalSentimentIndicators(ticker)
+    technicalSentimentIndicators = TechnicalSentimentIndicators(ticker)
+    technicalSentimentIndicators.run()

@@ -1,0 +1,61 @@
+Test 1 defaults 
+MAE: 6.9036
+MSE: 95.6144
+RMSE: 9.7783
+
+
+Test 2 sequence 780
+MAE: 10.5086
+MSE: 175.3749
+RMSE: 13.2429
+Directional Accuracy (%): 49.2063
+
+Test 3 sequence 120
+MAE: 6.8503
+MSE: 94.3820
+RMSE: 9.7150
+
+
+Test 4 sequence 90
+MAE: 6.8255
+MSE: 90.2894
+RMSE: 9.5021
+Directional Accuracy (%): 48.3157
+
+
+Test 5 sequence 90 epoch 1
+Test Set Metrics:
+MAE: 9.2571
+MSE: 158.7263
+RMSE: 12.5987
+Directional Accuracy (%): 48.1232
+
+Test 6 sequence 90 epoch 10 units 128 instead of 64
+MAE: 2.6259
+MSE: 13.6676
+RMSE: 3.6970
+Directional Accuracy (%): 49.2140
+(Note duplicating the test with the same results was never successful)
+
+Test 6 (repeated) sequence 90 epoch 10 units 128 instead of 64
+MAE: 4.5
+Directional Accuracy (%): 48
+
+
+Test 6 sequence 90 epoch 7 units 256
+MAE: 3.4326
+MSE: 25.7278
+RMSE: 5.0723
+Directional Accuracy (%): 49.5348
+
+Test 7 sequence 90 epoch 10 units 192 L2 regularization
+MAE: 1.7313
+MSE: 5.3863
+RMSE: 2.3208
+Directional Accuracy (%): 48.5723
+
+Test 8 sequence 90 epoch 10 units 256 L2 regularization
+MAE: 1.1644
+MSE: 4.1601
+RMSE: 2.0396
+Directional Accuracy (%): 48.8290

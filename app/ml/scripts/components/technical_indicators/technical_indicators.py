@@ -19,7 +19,6 @@ class TechnicalIndicators:
     def __init__(self, ticker: str):
         self.ticker = ticker
         self.data = None
-        self.process_data()
 
     def load_data(self):
         """
@@ -71,7 +70,7 @@ class TechnicalIndicators:
         self.data.to_csv(output_path)
         print(f"Technical indicators saved to {output_path}")
 
-    def process_data(self):
+    def run(self):
         """
         Streamline the entire process of loading data, adding indicators, and saving the output.
         """
@@ -82,4 +81,5 @@ class TechnicalIndicators:
 
 if __name__ == "__main__":
     ticker = os.getenv("TICKER")
-    TechnicalIndicators(ticker)
+    technicalIndicators = TechnicalIndicators(ticker)
+    technicalIndicators.run()

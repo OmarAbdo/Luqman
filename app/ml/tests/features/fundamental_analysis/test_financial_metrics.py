@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 import numpy as np
-from app.ml.scripts.features.fundamental_analysis.financial_metrics import (
+from app.ml.scripts.components.fundamental_analysis.financial_metrics import (
     calculate_net_profit_margin,
     calculate_roa,
     calculate_gross_margin,

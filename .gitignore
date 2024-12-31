@@ -5,3 +5,6 @@ app/ml/data_processed/**
 notes.txt
 .env
 app/ml/models/**
+.VSCodeCounter/
+data/
+alpha_vantage_keys.txt
