@@ -195,7 +195,7 @@ if __name__ == "__main__":
 
     # Create an instance of Main and run the full pipeline
     pipeline_manager = Main(ticker=ticker, config=config)
-    pipeline_manager.run_phase1()
+    # pipeline_manager.run_phase1()
     # pipeline_manager.run_phase2()
-    # pipeline_manager.run_phase3()
+    pipeline_manager.run_phase3()
     # pipeline_manager.run_full_pipeline()
