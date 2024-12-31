@@ -1,31 +1,3 @@
-"""
-alpha_vantage_20yr_intraday.py
-
-Fetches up to 20 years of 5-minute intraday data from Alpha Vantage's updated
-TIME_SERIES_INTRADAY endpoint using month-by-month queries.
-
-Features:
----------
-1) Uses the optional 'month=YYYY-MM' parameter to request older historical data
-   in full CSV format for each month.
-2) Loops from a user-defined start month (e.g., 2000-01) to an end month (e.g., 2019-12),
-   respecting the free-tier rate limit (5 calls/min) by sleeping 15 seconds after each call.
-3) Handles Alpha Vantage's varying column names ('time' vs. 'timestamp').
-4) Saves the final merged DataFrame to a CSV file.
-
-Limitations:
-------------
-- Data for each month is updated once per day on the free plan.
-- Realtime or 15-min delayed data requires premium.
-- The script can easily take an hour or more if you go for multiple decades of data.
-
-Usage Example:
---------------
-1) pip install requests pandas python-dotenv
-2) Put your ALPHA_VANTAGE_API_KEY in a .env file or as an environment variable.
-3) python alpha_vantage_20yr_intraday.py
-"""
-
 import os
 import time
 import requests

@@ -58,7 +58,9 @@ class DataPipeline:
         self.splitter = DataSplitter(test_size=self.test_size)
         self.scaler = DataScaler(self.scaler_directory)
         self.preparer = SequencePreparer(
-            sequence_length=self.sequence_length, target_column="close"
+            sequence_length=self.sequence_length,
+            target_column="close",
+            sample_rate=self.sample_rate,
         )
         self.saver = DataSaver(self.output_dir)
 
@@ -145,6 +147,6 @@ if __name__ == "__main__":
         ticker=ticker,
         sequence_length=90,  # default is 60
         test_size=0.2,  # 80% train, 20% test
-        sample_rate=1.0,  # Use full dataset; adjust if sampling is needed
+        sample_rate=1,  # Use full dataset; adjust if sampling is needed
     )
     pipeline.run()
