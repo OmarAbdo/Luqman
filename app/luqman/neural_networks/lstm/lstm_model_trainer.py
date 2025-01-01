@@ -1,8 +1,17 @@
 import os
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import (
+    LSTM,
+    Dense,
+    Dropout,
+    Conv1D,
+    MaxPooling1D,
+    Input,
+    Attention,
+    GlobalAveragePooling1D,
+)
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.regularizers import l2
@@ -10,7 +19,7 @@ from tensorflow.keras.regularizers import l2
 
 class LSTMModelTrainer:
     """
-    Class responsible for building, training, evaluating and saving the LSTM model.
+    Class responsible for building, training, evaluating, and saving the hybrid CNN+LSTM+Attention model.
     """
 
     def __init__(
@@ -22,7 +31,7 @@ class LSTMModelTrainer:
         units: int = 50,
         dropout: float = 0.2,
         learning_rate: float = 0.001,
-        epochs: int = 50,
+        epochs: int = 2,
         batch_size: int = 32,
         validation_split: float = 0.1,
         patience: int = 5,
@@ -95,33 +104,58 @@ class LSTMModelTrainer:
 
     def build_model(self):
         """
-        Builds the LSTM model using the specified hyperparameters.
+        Builds the CNN+LSTM+Attention model using the specified hyperparameters.
         """
-        model = Sequential()
-        model.add(
-            LSTM(
-                self.units,
-                input_shape=(self.X_train.shape[1], self.X_train.shape[2]),
-                return_sequences=True,
-                kernel_regularizer=l2(0.001),
-            )
-        )
-        model.add(Dropout(self.dropout))
-        model.add(LSTM(self.units, kernel_regularizer=l2(0.001)))
-        model.add(Dropout(self.dropout))
-        model.add(
-            Dense(units=1, kernel_regularizer=l2(0.001))  # Output layer
-        )  # Predicting a single value (close price)
+        # --- Functional API ---
+        input_seq = Input(shape=(self.X_train.shape[1], self.X_train.shape[2]))
+
+        # 1) CNN block to extract local features
+        x = Conv1D(
+            filters=32,
+            kernel_size=3,
+            padding="causal",
+            activation="relu",
+            kernel_regularizer=l2(0.001),
+        )(input_seq)
+        x = MaxPooling1D(pool_size=2)(x)
+        x = Dropout(self.dropout)(x)
+
+        # 2) LSTM block (return_sequences=True for attention)
+        x = LSTM(self.units, return_sequences=True, kernel_regularizer=l2(0.001))(x)
+        x = LSTM(
+            int((self.units / 2)), return_sequences=True, kernel_regularizer=l2(0.001)
+        )(x)
+        x = LSTM(
+            int((self.units / 4)), return_sequences=True, kernel_regularizer=l2(0.001)
+        )(x)
+
+        # 3) Attention layer
+        #    query = x, value = x => self-attention
+        x_att = Attention()([x, x])
+
+        # 4) Global average pooling
+        x = GlobalAveragePooling1D()(x_att)
+
+        # 5) Dropout + Output layer
+        x = Dropout(self.dropout)(x)
+        output = Dense(
+            units=1,
+            kernel_regularizer=l2(0.001),
+            activation="linear",  # For a regression task (predicting prices)
+        )(x)
+
+        self.model = Model(inputs=input_seq, outputs=output)
 
         optimizer = Adam(learning_rate=self.learning_rate)
-        model.compile(loss="mean_squared_error", optimizer=optimizer, metrics=["mae"])
-        self.model = model
+        self.model.compile(
+            loss="mean_squared_error", optimizer=optimizer, metrics=["mae"]
+        )
         print("Model built successfully.")
-        print(self.model.summary())
+        self.model.summary()
 
     def train_model(self):
         """
-        Trains the LSTM model with early stopping and model checkpointing.
+        Trains the model with early stopping and model checkpointing.
         """
         if self.model is None:
             raise ValueError(
@@ -129,7 +163,10 @@ class LSTMModelTrainer:
             )
 
         early_stopping = EarlyStopping(
-            monitor="val_loss", patience=self.patience, restore_best_weights=True
+            monitor="val_loss",
+            patience=self.patience,
+            restore_best_weights=True,
+            verbose=1,
         )
         checkpoint_path = os.path.join(
             self.model_directory, f"{self.ticker}_best_model.keras"
@@ -139,6 +176,7 @@ class LSTMModelTrainer:
             save_best_only=True,
             monitor="val_loss",
             mode="min",
+            verbose=1,
         )
 
         print("Starting training...")
@@ -187,11 +225,7 @@ class LSTMModelTrainer:
 
 if __name__ == "__main__":
     # Example usage:
-    # Set the environment variable TICKER or pass it directly as a parameter.
-    # E.g., ticker = "AAPL"
-    ticker = os.getenv(
-        "TICKER", "AAPL"
-    )  # For demonstration, defaulting to AAPL if not set.
+    ticker = os.getenv("TICKER", "AAPL")  # defaulting to AAPL if not set
 
     trainer = LSTMModelTrainer(
         ticker=ticker,
@@ -199,9 +233,9 @@ if __name__ == "__main__":
         model_directory="app/luqman/models",
         units=256,
         dropout=0.3,
-        learning_rate=0.001,
-        epochs=20,
-        batch_size=64,
+        learning_rate=0.0005,
+        epochs=2,
+        batch_size=128,
         validation_split=0.1,
         patience=3,
     )
