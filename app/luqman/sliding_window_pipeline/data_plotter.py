@@ -9,11 +9,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
-# Description:
-# The DataPlotter class is designed to visualize the actual vs. predicted close prices.
-# It loads the scaler information to inverse transform the scaled data back to its original scale
-# and plots the results using matplotlib and seaborn.
-
 
 class DataPlotter:
     """Class responsible for plotting de-scaled features."""
@@ -85,78 +80,72 @@ class DataPlotter:
 
     def plot_close_price(
         self,
-        y_test_scaled: np.ndarray,
-        predictions_scaled: np.ndarray,
-        timestamps: np.ndarray,
+        y_test_scaled: np.ndarray = None,
+        predictions_scaled: np.ndarray = None,
+        timestamps: np.ndarray = None,
+        # New optional arguments:
+        actual_unscaled: np.ndarray = None,
+        preds_unscaled: np.ndarray = None,
+        title: str = "Actual vs Predicted Close Price (Line Chart)",
     ):
         """
-        Plots the actual vs predicted close prices.
+        Plots the actual vs predicted close prices, supporting both scaled and unscaled data.
+        If only predictions are provided, it plots only the predictions.
 
         Args:
-            y_test_scaled (np.ndarray): Scaled actual close prices.
-            predictions_scaled (np.ndarray): Scaled predicted close prices.
-            timestamps (np.ndarray): Timestamps corresponding to the test data.
+            y_test_scaled (np.ndarray, optional): Scaled actual close prices.
+            predictions_scaled (np.ndarray, optional): Scaled predicted close prices.
+            timestamps (np.ndarray, optional): Timestamps corresponding to the test data.
+            actual_unscaled (np.ndarray, optional): Unscaled actual close prices.
+            preds_unscaled (np.ndarray, optional): Unscaled predicted close prices.
+            title (str, optional): Plot title. Defaults to "Actual vs Predicted Close Price (Line Chart)".
         """
-        y_test = self.inverse_transform(y_test_scaled)
-        predictions = self.inverse_transform(predictions_scaled)
+        if timestamps is None:
+            raise ValueError("Timestamps are required to plot the data.")
 
-        # Convert timestamps to datetime objects
-        timestamps = pd.to_datetime(timestamps)
+        # Determine actual values
+        if actual_unscaled is not None:
+            actual = actual_unscaled
+        elif y_test_scaled is not None:
+            actual = self.inverse_transform(y_test_scaled)
+        else:
+            actual = None
 
+        # Determine predicted values
+        if preds_unscaled is not None:
+            preds = preds_unscaled
+        elif predictions_scaled is not None:
+            preds = self.inverse_transform(predictions_scaled)
+        else:
+            preds = None
+
+        # Initialize the plot
         plt.figure(figsize=(15, 8))
-        sns.lineplot(
-            x=timestamps,
-            y=y_test,
-            label="Actual Close Price",
-            color="blue",
-        )
-        sns.lineplot(
-            x=timestamps,
-            y=predictions,
-            label="Predicted Close Price",
-            color="red",
-        )
+
+        # Plot actual vs predicted if both are available
+        if actual is not None and preds is not None:
+            sns.lineplot(
+                x=timestamps, y=actual, label="Actual Close Price", color="blue"
+            )
+            sns.lineplot(
+                x=timestamps, y=preds, label="Predicted Close Price", color="red"
+            )
+        elif preds is not None:
+            # Plot only predictions
+            sns.lineplot(
+                x=timestamps, y=preds, label="Predicted Close Price", color="red"
+            )
+        elif actual is not None:
+            # Plot only actuals (less common in your use-case)
+            sns.lineplot(
+                x=timestamps, y=actual, label="Actual Close Price", color="blue"
+            )
+        else:
+            raise ValueError("No data provided for plotting.")
+
         plt.xlabel("Time")
         plt.ylabel("Close Price")
-        plt.title("Actual vs Predicted Close Price (Line Chart)")
+        plt.title(title)
         plt.legend()
         plt.grid(True)
         plt.show()
-
-
-if __name__ == "__main__":
-    # Example usage:
-    # Ensure that you have 'X_test.npy', 'y_test.npy', 'timestamps_test.npy', and a trained model.
-    import tensorflow as tf
-
-    # Define paths
-    ticker = os.getenv("TICKER")
-    if not ticker:
-        raise ValueError("TICKER environment variable not set.")
-
-    scaler_directory = f"app/luqman/data/{ticker}/stock/scalers/"
-    output_dir = f"app/luqman/data/{ticker}/stock/lstm_ready/"
-    model_path = f"app/luqman/models/{ticker}_lstm_model.keras"
-
-    # Load scalers and plotter
-    plotter = DataPlotter(scaler_directory=scaler_directory)
-
-    # Load test data
-    X_test = np.load(os.path.join(output_dir, "X_test.npy"))
-    y_test = np.load(os.path.join(output_dir, "y_test.npy"))
-    timestamps_test = np.load(
-        os.path.join(output_dir, "timestamps_test.npy"), allow_pickle=True
-    )
-
-    # Load the trained model
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"The model file {model_path} does not exist.")
-    model = tf.keras.models.load_model(model_path)
-    print("Model loaded successfully.")
-
-    # Make predictions
-    predictions_scaled = model.predict(X_test)
-    print("Predictions made successfully.")
-
-    # Plot actual vs predicted close prices
-    plotter.plot_close_price(y_test, predictions_scaled, timestamps_test)

@@ -11,7 +11,7 @@ import sys
 
 sys.path.append("D:/Freelance/Software - reborn/Github/3 Tools/Luqman")
 
-from app.luqman.pipeline.data_plotter import (
+from app.luqman.sliding_window_pipeline.data_plotter import (
     DataPlotter,
 )  # Assuming DataPlotter is imported as in your provided code
 
@@ -113,7 +113,7 @@ class ModelAgent:
             y_test_scaled=None,  # we already have actual in unscaled form, so ignoring y_test_scaled
             predictions_scaled=None,  # ignoring scaled preds
             timestamps=timestamps,
-            # title=f"Split '{split_name}' - Actual vs. Predicted",
+            title=f"Split '{split_name}' - Actual vs. Predicted",
             actual_unscaled=actual,  # can pass unscaled actual
             preds_unscaled=preds,  # pass unscaled preds
         )
@@ -154,7 +154,7 @@ class ModelAgent:
             y_test_scaled=None,
             predictions_scaled=None,
             timestamps=future_times,
-            # title=f"Forecast for split '{split_name}'",
+            title=f"Forecast for split '{split_name}'",
             actual_unscaled=None,
             preds_unscaled=future_preds,
         )
