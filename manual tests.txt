@@ -1,3 +1,25 @@
+Initial CNNs and Attention results
+GRU Test Set Metrics:
+MAE: 8.3662
+MSE: 79.0722
+RMSE: 8.8923
+Directional Accuracy (%): 48.8356
+
+
+LSTM Test Set Metrics:
+MAE: 7.0709
+MSE: 68.9563
+RMSE: 8.3040
+Directional Accuracy (%): 48.9922
+=============
+Fetcher API refactor results
+MAE: 9.8095
+MSE: 114.6469
+RMSE: 10.7073
+Directional Accuracy (%): 47.6221
+=========
+old
+
 Test 1 defaults 
 MAE: 6.9036
 MSE: 95.6144
