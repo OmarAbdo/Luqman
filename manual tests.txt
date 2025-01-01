@@ -11,6 +11,12 @@ MAE: 7.0709
 MSE: 68.9563
 RMSE: 8.3040
 Directional Accuracy (%): 48.9922
+
+LSTM (10 epochs) Set Metrics:
+MAE: 5.5083
+MSE: 59.9836
+RMSE: 7.7449
+Directional Accuracy (%): 48.7084
 =============
 Fetcher API refactor results
 MAE: 9.8095
