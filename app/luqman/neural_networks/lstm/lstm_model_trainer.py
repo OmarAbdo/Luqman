@@ -1,3 +1,5 @@
+# File: LSTMModelTrainer.py
+
 import os
 import numpy as np
 import tensorflow as tf
@@ -106,12 +108,11 @@ class LSTMModelTrainer:
         """
         Builds the CNN+LSTM+Attention model using the specified hyperparameters.
         """
-        # --- Functional API ---
         input_seq = Input(shape=(self.X_train.shape[1], self.X_train.shape[2]))
 
         # 1) CNN block to extract local features
         x = Conv1D(
-            filters=32,
+            filters=32,  # Align with GRU's filters
             kernel_size=3,
             padding="causal",
             activation="relu",
@@ -121,12 +122,15 @@ class LSTMModelTrainer:
         x = Dropout(self.dropout)(x)
 
         # 2) LSTM block (return_sequences=True for attention)
-        x = LSTM(self.units, return_sequences=True, kernel_regularizer=l2(0.001))(x)
         x = LSTM(
-            int((self.units / 2)), return_sequences=True, kernel_regularizer=l2(0.001)
+            self.units,
+            return_sequences=True,
+            kernel_regularizer=l2(0.001),
         )(x)
         x = LSTM(
-            int((self.units / 4)), return_sequences=True, kernel_regularizer=l2(0.001)
+            int(self.units / 2),
+            return_sequences=True,
+            kernel_regularizer=l2(0.001),
         )(x)
 
         # 3) Attention layer
@@ -144,12 +148,15 @@ class LSTMModelTrainer:
             activation="linear",  # For a regression task (predicting prices)
         )(x)
 
+        # Define the model
         self.model = Model(inputs=input_seq, outputs=output)
 
+        # Compile the model
         optimizer = Adam(learning_rate=self.learning_rate)
         self.model.compile(
             loss="mean_squared_error", optimizer=optimizer, metrics=["mae"]
         )
+
         print("Model built successfully.")
         self.model.summary()
 
@@ -169,7 +176,7 @@ class LSTMModelTrainer:
             verbose=1,
         )
         checkpoint_path = os.path.join(
-            self.model_directory, f"{self.ticker}_best_model.keras"
+            self.model_directory, f"{self.ticker}_best_lstm_model.keras"
         )
         model_checkpoint = ModelCheckpoint(
             filepath=checkpoint_path,
@@ -225,19 +232,22 @@ class LSTMModelTrainer:
 
 if __name__ == "__main__":
     # Example usage:
-    ticker = os.getenv("TICKER", "AAPL")  # defaulting to AAPL if not set
+    import dotenv
+
+    dotenv.load_dotenv()  # Loads environment variables from a .env file
+    ticker = os.getenv("TICKER", "AAPL")  # Defaults to AAPL if not set
 
     trainer = LSTMModelTrainer(
         ticker=ticker,
         data_directory="app/luqman/data",
         model_directory="app/luqman/models",
-        units=256,
-        dropout=0.3,
-        learning_rate=0.0005,
-        epochs=10,
-        batch_size=128,
+        units=64,  # Align with GRU's units
+        dropout=0.2,  # Align with GRU's dropout
+        learning_rate=0.001,
+        epochs=2,  # Align with GRU's epochs
+        batch_size=128,  # Align with GRU's batch_size
         validation_split=0.1,
-        patience=3,
+        patience=5,  # Align with GRU's patience
     )
 
     trainer.run()

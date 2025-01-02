@@ -198,7 +198,7 @@ if __name__ == "__main__":
         ticker=ticker,
         sequence_length=90,  # Adjust as needed
         sample_rate=1.0,  # Use full dataset; adjust if sampling is needed
-        n_splits=5,  # Number of sliding window splits
+        n_splits=6,  # Number of sliding window splits
         max_train_size=None,  # Use all data up to the split point
         max_workers=2,  # Adjust based on your CPU cores
     )
