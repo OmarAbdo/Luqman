@@ -241,10 +241,10 @@ if __name__ == "__main__":
         ticker=ticker,
         data_directory="app/luqman/data",
         model_directory="app/luqman/models",
-        units=64,  # Align with GRU's units
+        units=128,  # Align with GRU's units
         dropout=0.2,  # Align with GRU's dropout
         learning_rate=0.001,
-        epochs=2,  # Align with GRU's epochs
+        epochs=3,  # Align with GRU's epochs
         batch_size=128,  # Align with GRU's batch_size
         validation_split=0.1,
         patience=5,  # Align with GRU's patience

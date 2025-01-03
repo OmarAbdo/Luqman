@@ -9,11 +9,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
-# Description:
-# The DataPlotter class is designed to visualize the actual vs. predicted close prices.
-# It loads the scaler information to inverse transform the scaled data back to its original scale
-# and plots the results using matplotlib and seaborn.
-
 
 class DataPlotter:
     """Class responsible for plotting de-scaled features."""
@@ -32,6 +27,7 @@ class DataPlotter:
     def load_scalers(self):
         """
         Loads the scalers from the scaler directory.
+        Expects a 'scaler_info.json' file detailing the scaler files and methods.
         """
         scaler_info_file = os.path.join(self.scaler_directory, "scaler_info.json")
         if not os.path.exists(scaler_info_file):
@@ -74,9 +70,7 @@ class DataPlotter:
         """
         data = data.reshape(-1, 1)
         method = self.scalers[self.target_column]["method"]
-        if method == "standard":
-            return self.target_scaler.inverse_transform(data).flatten()
-        elif method == "minmax":
+        if method in ["standard", "minmax"]:
             return self.target_scaler.inverse_transform(data).flatten()
         elif method == "log_scaling":
             return np.expm1(data).flatten()
@@ -88,6 +82,7 @@ class DataPlotter:
         y_test_scaled: np.ndarray,
         predictions_scaled: np.ndarray,
         timestamps: np.ndarray,
+        num_points: int = None,
     ):
         """
         Plots the actual vs predicted close prices.
@@ -96,67 +91,42 @@ class DataPlotter:
             y_test_scaled (np.ndarray): Scaled actual close prices.
             predictions_scaled (np.ndarray): Scaled predicted close prices.
             timestamps (np.ndarray): Timestamps corresponding to the test data.
+            num_points (int, optional): Number of points to plot. Defaults to all.
         """
+        # Inverse transform
         y_test = self.inverse_transform(y_test_scaled)
         predictions = self.inverse_transform(predictions_scaled)
 
         # Convert timestamps to datetime objects
         timestamps = pd.to_datetime(timestamps)
 
+        # Determine number of points to plot
+        if num_points is None or num_points > len(timestamps):
+            num_points = len(timestamps)
+        else:
+            num_points = num_points
+
+        # Slice the data
+        timestamps_plot = timestamps[:num_points]
+        y_test_plot = y_test[:num_points]
+        predictions_plot = predictions[:num_points]
+
         plt.figure(figsize=(15, 8))
         sns.lineplot(
-            x=timestamps,
-            y=y_test,
+            x=timestamps_plot,
+            y=y_test_plot,
             label="Actual Close Price",
             color="blue",
         )
         sns.lineplot(
-            x=timestamps,
-            y=predictions,
+            x=timestamps_plot,
+            y=predictions_plot,
             label="Predicted Close Price",
             color="red",
         )
         plt.xlabel("Time")
         plt.ylabel("Close Price")
-        plt.title("Actual vs Predicted Close Price (Line Chart)")
+        plt.title("Actual vs Predicted Close Price (Informer)")
         plt.legend()
         plt.grid(True)
         plt.show()
-
-
-if __name__ == "__main__":
-    # Example usage:
-    # Ensure that you have 'X_test.npy', 'y_test.npy', 'timestamps_test.npy', and a trained model.
-    import tensorflow as tf
-
-    # Define paths
-    ticker = os.getenv("TICKER")
-    if not ticker:
-        raise ValueError("TICKER environment variable not set.")
-
-    scaler_directory = f"app/luqman/data/{ticker}/stock/scalers/"
-    output_dir = f"app/luqman/data/{ticker}/stock/lstm_ready/"
-    model_path = f"app/luqman/models/{ticker}_lstm_model.keras"
-
-    # Load scalers and plotter
-    plotter = DataPlotter(scaler_directory=scaler_directory)
-
-    # Load test data
-    X_test = np.load(os.path.join(output_dir, "X_test.npy"))
-    y_test = np.load(os.path.join(output_dir, "y_test.npy"))
-    timestamps_test = np.load(
-        os.path.join(output_dir, "timestamps_test.npy"), allow_pickle=True
-    )
-
-    # Load the trained model
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"The model file {model_path} does not exist.")
-    model = tf.keras.models.load_model(model_path)
-    print("Model loaded successfully.")
-
-    # Make predictions
-    predictions_scaled = model.predict(X_test)
-    print("Predictions made successfully.")
-
-    # Plot actual vs predicted close prices
-    plotter.plot_close_price(y_test, predictions_scaled, timestamps_test)

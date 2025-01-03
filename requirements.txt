@@ -18,3 +18,5 @@ torch
 seaborn
 python-dotenv
 joblib
+torch 
+torchvision

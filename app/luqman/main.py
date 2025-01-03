@@ -34,8 +34,8 @@ from components.technical_sentiment_indicators.technical_sentiment_indicators im
 )
 from utils.merger import CSVDataMerger
 from pipeline.data_pipeline import DataPipeline
-from neural_networks.lstm.lstm_model_trainer import LSTMModelTrainer
-from neural_networks.lstm.lstm_model_agent import ModelAgent
+from app.luqman.neural_networks.lstm.trainer import LSTMModelTrainer
+from app.luqman.neural_networks.lstm.agent import ModelAgent
 
 
 class Main:

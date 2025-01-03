@@ -145,8 +145,8 @@ if __name__ == "__main__":
 
     pipeline = DataPipeline(
         ticker=ticker,
-        sequence_length=90,  # default is 60
-        test_size=0.05,  # 80% train, 20% test
+        sequence_length=60,  # default is 60
+        test_size=0.2,  # 80% train, 20% test
         sample_rate=1,  # Use full dataset; adjust if sampling is needed
     )
     pipeline.run()
