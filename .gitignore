@@ -6,6 +6,9 @@ notes.txt
 .env
 app/luqman/models/**
 .VSCodeCounter/
-data/
+/data/
 alpha_vantage_keys.txt
 **/__pycache__
+*.egg-info/
+.pytest_cache/
+logs/Informer Beyond Efficient Transformer for Long Sequence.pdf
