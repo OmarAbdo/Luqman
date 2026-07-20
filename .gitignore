@@ -11,4 +11,7 @@ alpha_vantage_keys.txt
 **/__pycache__
 *.egg-info/
 .pytest_cache/
-logs/Informer Beyond Efficient Transformer for Long Sequence.pdf
+logs/
+.refactor/
+experiments/
+*.pdf
