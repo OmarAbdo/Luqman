@@ -1,3 +1,13 @@
+"""Daily macroeconomic series (Alpha Vantage).
+
+Restricted to market-quoted series (treasury yields, fed funds) that have an
+unambiguous daily observation. Release-based indicators such as CPI are
+deliberately excluded: using them correctly requires modelling publication
+dates, and using them incorrectly is a straightforward source of look-ahead.
+
+Status: macro features were REJECTED -- see dataset-plan.md.
+"""
+
 import time
 
 import pandas as pd

@@ -1,3 +1,10 @@
+"""Quality features (Novy-Marx gross profitability, and value+quality).
+
+Status: REJECTED -- see `data/quality.py` for the sector-mixing diagnosis. The
+literal Piotroski F-score was deliberately not used: it has documented
+out-of-sample decay over the last decade.
+"""
+
 import numpy as np
 import pandas as pd
 

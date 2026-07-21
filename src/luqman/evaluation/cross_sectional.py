@@ -1,3 +1,14 @@
+"""Cross-sectional (long-short) factor evaluation.
+
+Ranks the universe by a factor each day, goes long the top quantile and short
+the bottom, and measures the spread return plus the daily cross-sectional IC.
+
+This is how factors such as momentum are actually validated in the literature,
+and it matters: momentum failed as a single-name time-series signal here and
+then passed cross-sectionally. The two are different claims, and only the
+cross-sectional one matches what the original research demonstrated.
+"""
+
 from dataclasses import dataclass
 
 import numpy as np

@@ -9,36 +9,29 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from luqman.data.fetcher import fetch_daily
-from luqman.data.validation import validate_daily_ohlcv
 from luqman.data.store import ParquetStore
+from luqman.data.universe import EQUITY_UNIVERSE
+from luqman.data.validation import validate_daily_ohlcv
 
-# ~50 large-caps, GICS-sector-diverse, all liquid enough to trade in practice.
-UNIVERSE = [
-    # Technology
-    "AAPL", "MSFT", "NVDA", "AVGO", "ORCL", "CRM", "ADBE", "AMD", "CSCO", "IBM",
-    # Financials
-    "JPM", "BAC", "WFC", "GS", "MS", "BLK", "SCHW", "AXP",
-    # Healthcare
-    "JNJ", "UNH", "PFE", "MRK", "ABBV", "LLY", "TMO", "ABT",
-    # Consumer discretionary / staples
-    "AMZN", "TSLA", "HD", "MCD", "NKE", "WMT", "KO", "PEP", "PG", "COST",
-    # Energy
-    "XOM", "CVX", "COP", "SLB",
-    # Industrials
-    "CAT", "BA", "HON", "UPS", "GE",
-    # Communication services
-    "GOOGL", "META", "NFLX", "DIS", "CMCSA",
-    # Utilities / real estate / materials (thinner but present)
-    "NEE", "LIN",
-]
+# The universe definition lives in the package (luqman.data.universe) so that
+# the CLI and these scripts rank an identical set of names.
+UNIVERSE = EQUITY_UNIVERSE
 
 
 def main():
+    # Wave 3 needs a long history: long-term reversal uses a 5-year formation
+    # window, which leaves no usable evaluation period if the data starts in
+    # 2015. Survivorship caveat: this universe was selected from 2026 large-caps,
+    # so pre-2015 history is survivorship-biased and any result relying on it
+    # must say so.
+    start = sys.argv[1] if len(sys.argv) > 1 else "2000-01-01"
+    print(f"Fetching {len(UNIVERSE)} tickers from {start}\n")
+
     store = ParquetStore("data")
     ok, failed = [], []
     for ticker in UNIVERSE:
         try:
-            df = fetch_daily(ticker, start="2015-01-01")
+            df = fetch_daily(ticker, start=start)
             report = validate_daily_ohlcv(df)
             if not report.ok:
                 print(f"{ticker}: VALIDATION FAILED {report.issues}")

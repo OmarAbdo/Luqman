@@ -1,3 +1,14 @@
+"""Forecast metrics, anchored to baselines.
+
+MAE and RMSE are included but are not the point. MASE (error scaled by a naive
+forecast's error) and skill-versus-baseline are, because absolute error on
+returns is nearly meaningless in isolation -- the original system drove MAE
+down 7x while directional accuracy stayed below a coin flip.
+
+Directional accuracy is always reported next to the base rate, since a stock
+that rose on 54% of days makes 54% accuracy worthless.
+"""
+
 import numpy as np
 
 

@@ -16,11 +16,13 @@ dependencies = [
     "pyarrow>=15",
     "yfinance>=1.0",
     "python-dotenv>=1.0",
+    "requests>=2.31",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "httpx>=0.27"]
 torch = ["torch>=2.2"]
+serve = ["fastapi>=0.110", "uvicorn[standard]>=0.27"]
 
 [project.scripts]
 luqman = "luqman.cli:main"

@@ -1,3 +1,10 @@
+"""Event-study evaluation: returns around a dated event.
+
+Used to test whether an event type (an earnings surprise, for instance) is
+followed by abnormal drift, measured relative to the event date rather than on
+a fixed calendar.
+"""
+
 import numpy as np
 import pandas as pd
 

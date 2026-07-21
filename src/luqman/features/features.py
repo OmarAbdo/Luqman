@@ -1,3 +1,19 @@
+"""The general daily feature set: stationary and strictly backward-looking.
+
+Lagged log returns, realized volatility, volume ratio, Wilder RSI, normalized
+MACD histogram, Bollinger %B and bandwidth, and cyclical calendar encodings.
+No fitted state: every column is a rolling or exponentially-weighted transform
+of past data only, so computing them cannot leak.
+
+Warm-up rows are dropped rather than imputed. Filling them would fabricate
+history at exactly the point where the indicators are least reliable.
+
+Note this set predates the proof standard. Auditing it is what revealed that
+none of these features carried usable signal on their own -- see
+`evaluation/feature_audit.py`. Retained because it remains the honest control
+group against which proven features are compared.
+"""
+
 import numpy as np
 import pandas as pd
 

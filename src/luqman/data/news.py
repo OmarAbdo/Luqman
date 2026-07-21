@@ -1,3 +1,15 @@
+"""News-article fetching and storage (Alpha Vantage).
+
+Resumable and chunked, because the full history runs to tens of thousands of
+articles across many rate-limited requests.
+
+Status: the sentiment signal built from this data was REJECTED. Article-level
+testing found the vendor's sentiment score carries essentially zero information
+about forward returns at every horizon and relevance filter tried, so no
+downstream aggregation could have rescued it. Kept because the stored corpus is
+expensive to re-fetch and may support a different featurization later.
+"""
+
 import time
 
 import pandas as pd

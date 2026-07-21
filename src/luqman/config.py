@@ -1,3 +1,12 @@
+"""Runtime settings, resolved once from the environment.
+
+Every path in the package comes from here rather than from a literal string or
+a relative path, so behaviour does not depend on the directory the process was
+started from. `.env` supplies API keys and optional overrides; sensible
+defaults mean the core (price data, volatility forecasting, both admitted
+factors) runs with no configuration at all.
+"""
+
 import os
 from dataclasses import dataclass
 from pathlib import Path

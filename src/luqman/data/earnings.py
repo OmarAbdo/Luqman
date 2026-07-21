@@ -1,3 +1,13 @@
+"""Historical earnings surprises (actual vs estimated EPS).
+
+Unlike the statement endpoints, FMP's earnings endpoint is not capped at 5
+periods on the free tier, so this reaches back decades -- provided no explicit
+`limit` parameter is sent.
+
+Status: the PEAD (post-earnings-announcement drift) feature built from this was
+REJECTED both single-name and cross-sectionally.
+"""
+
 import pandas as pd
 import requests
 

@@ -1,3 +1,10 @@
+"""On-disk storage: one parquet file per ticker or table.
+
+The only module that knows storage paths. Everything else asks the store for
+data by ticker or table name, which keeps the layout a single decision rather
+than a convention scattered across the codebase.
+"""
+
 from pathlib import Path
 
 import pandas as pd

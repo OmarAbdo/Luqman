@@ -1,3 +1,15 @@
+"""Balance-sheet and income-statement inputs for quality factors.
+
+Supports the Novy-Marx gross profitability construction (gross profit / total
+assets).
+
+Status: REJECTED, but for an identified and fixable reason rather than an
+absence of effect -- the raw ratio is structurally distorted by financials,
+whose balance sheets are enormous relative to revenue by the nature of the
+business. Excluding financials flipped the sign to the expected direction,
+though the magnitude still fell short of the admission bar.
+"""
+
 import pandas as pd
 import requests
 

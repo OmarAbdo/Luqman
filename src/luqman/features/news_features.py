@@ -1,3 +1,12 @@
+"""Daily features aggregated from news articles.
+
+Article counts, multi-window sentiment averages, and sentiment trend, joined to
+trading days through the point-in-time rule in `data/asof.py`.
+
+Status: REJECTED. The underlying vendor sentiment score was shown to carry no
+signal at the article level, before any aggregation.
+"""
+
 import numpy as np
 import pandas as pd
 

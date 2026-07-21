@@ -1,3 +1,9 @@
+"""Relative strength versus a benchmark (SPY).
+
+Status: REJECTED, both single-name and cross-sectionally, with IC
+indistinguishable from zero in both framings.
+"""
+
 import numpy as np
 import pandas as pd
 

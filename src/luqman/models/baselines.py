@@ -1,3 +1,15 @@
+"""Baseline models and the standard ridge pipeline.
+
+The baselines are the point of this module. Every model ever evaluated in this
+project is reported against zero-return (persistence) and historical-mean
+baselines, without exception, because the original system's headline results
+came from a model that had learned to echo the previous price -- excellent MAE,
+no skill. A model that cannot beat persistence has not demonstrated anything.
+
+Scaling lives inside the pipeline so it is fit per training fold, never across
+the full sample.
+"""
+
 import numpy as np
 from sklearn.linear_model import Ridge
 from sklearn.pipeline import Pipeline

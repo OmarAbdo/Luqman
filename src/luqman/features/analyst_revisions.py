@@ -1,3 +1,9 @@
+"""Analyst rating level and month-over-month revision features.
+
+Status: REJECTED -- see `data/analyst_grades.py` for why the promising-looking
+revision result was an evaluation-cadence artifact rather than alpha.
+"""
+
 import numpy as np
 import pandas as pd
 

@@ -1,3 +1,12 @@
+"""Features derived from financial statements.
+
+Revenue year-over-year growth, net margin, EPS change -- aligned to the date
+each report actually became public.
+
+Status: REJECTED at the daily horizon. Fundamentals plausibly suit much longer
+horizons than the ones tested here.
+"""
+
 import numpy as np
 import pandas as pd
 

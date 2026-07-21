@@ -1,3 +1,15 @@
+"""Per-feature information-content audit.
+
+Computes each feature's rank correlation (IC) with forward returns, per
+chronological block and over the whole sample, plus a sign-consistency check
+that separates a stable relationship from a lucky fit.
+
+This module produced the project's most important negative result: all 24
+features of the original set had |IC| below 0.06, an order of magnitude under
+what is considered actionable. That explained why three different model
+families had failed identically -- there was no signal for any of them to find.
+"""
+
 import numpy as np
 import pandas as pd
 from scipy import stats

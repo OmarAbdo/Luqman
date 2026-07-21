@@ -1,3 +1,10 @@
+"""Sliding-window sequence construction for recurrent models.
+
+Windowing with correct target alignment is easy to get subtly wrong by one
+step, in a way that either leaks the target or misaligns it. The alignment here
+is covered by explicit tests.
+"""
+
 import numpy as np
 import pandas as pd
 

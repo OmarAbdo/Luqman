@@ -1,3 +1,8 @@
+"""VIX-derived features, used as a cheap stand-in for a geopolitical event feed.
+
+Tested before committing to a full event-data source. Status: REJECTED.
+"""
+
 import numpy as np
 import pandas as pd
 

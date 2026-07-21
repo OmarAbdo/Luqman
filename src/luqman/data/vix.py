@@ -1,3 +1,8 @@
+"""VIX index data, used as a market-stress proxy.
+
+Status: both VIX level and VIX change were REJECTED as return predictors.
+"""
+
 import pandas as pd
 
 from .fetcher import normalize_ohlcv

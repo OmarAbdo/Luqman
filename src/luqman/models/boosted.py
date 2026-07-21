@@ -1,3 +1,9 @@
+"""Gradient boosting (scikit-learn HistGradientBoosting).
+
+Evaluated against the same baselines as everything else. It did not beat
+persistence on daily returns.
+"""
+
 from sklearn.ensemble import HistGradientBoostingRegressor
 
 

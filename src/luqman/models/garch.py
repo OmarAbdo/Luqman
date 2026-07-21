@@ -1,3 +1,13 @@
+"""GJR-GARCH volatility model (via the `arch` package).
+
+Included as the purpose-built alternative for volatility forecasting, so that
+the simple ridge model faces a serious competitor rather than only a naive one.
+
+Result: ridge won outright -- higher mean skill and more head-to-head wins
+across the 8-ticker panel. Model search on the volatility track is therefore
+not the bottleneck.
+"""
+
 import numpy as np
 
 

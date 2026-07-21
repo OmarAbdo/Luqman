@@ -1,3 +1,15 @@
+"""Daily price fetching and schema normalization.
+
+Provider frames are normalized to one canonical shape (tz-naive DatetimeIndex
+named `date`, lowercase OHLCV columns, sorted, deduplicated) so that nothing
+downstream needs to know which provider the data came from. Prices are
+split/dividend adjusted.
+
+Fetches fail loudly on an empty result rather than returning an empty frame,
+because a silently empty frame propagates into features and evaluation and
+surfaces much later as an unexplained result.
+"""
+
 import pandas as pd
 
 OHLCV_COLUMNS = ["open", "high", "low", "close", "volume"]

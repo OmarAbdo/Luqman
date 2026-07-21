@@ -1,3 +1,10 @@
+"""Walk-forward evaluation harness.
+
+Fits each candidate model across walk-forward folds and returns one comparison
+table with the baselines included as rows, so no result can be presented
+without its baseline visible alongside it.
+"""
+
 from typing import Callable
 
 import numpy as np

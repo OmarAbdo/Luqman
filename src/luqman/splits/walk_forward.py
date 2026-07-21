@@ -1,3 +1,14 @@
+"""Walk-forward splitting with an embargo.
+
+Expanding-window splits that respect chronology, plus an embargo gap between
+train and test at least as long as the target horizon. Without the embargo, the
+last training rows have forward-looking targets that overlap the test window --
+a subtle leak that inflates results.
+
+Random k-fold cross-validation is never appropriate here: it trains on the
+future to predict the past.
+"""
+
 from dataclasses import dataclass
 
 import numpy as np

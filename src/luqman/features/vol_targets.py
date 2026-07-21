@@ -1,3 +1,10 @@
+"""Volatility targets for the forecasting track.
+
+Realized volatility over a window starting some horizon ahead. This is the
+target the project's one proven single-name feature actually predicts -- move
+magnitude, not direction.
+"""
+
 import pandas as pd
 
 from .technical.candidates import future_realized_vol

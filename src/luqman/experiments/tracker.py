@@ -1,3 +1,13 @@
+"""Experiment records: config, data hash, metrics, seed.
+
+Each run is written to `experiments/` as JSON plus a row in an index CSV, so
+any reported number can be traced back to the exact configuration that produced
+it.
+
+This exists because the original project's best result was recorded in a
+hand-maintained text file and could never be reproduced.
+"""
+
 import json
 import subprocess
 from dataclasses import asdict

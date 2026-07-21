@@ -1,3 +1,14 @@
+"""Analyst rating history (Financial Modeling Prep).
+
+This endpoint has genuinely deep free-tier history (~90 months per ticker),
+unlike the statement endpoints.
+
+Status: REJECTED, both the rating level and the month-over-month revision. The
+revision signal initially showed a striking Sharpe that was diagnosed as an
+artifact: a monthly-updating signal evaluated under daily rebalancing produces
+portfolio turnover effects rather than genuine predictive ranking.
+"""
+
 import pandas as pd
 import requests
 

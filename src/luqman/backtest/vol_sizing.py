@@ -1,3 +1,11 @@
+"""Position sizing driven by a volatility forecast.
+
+Sizes exposure as target volatility divided by forecast volatility, so
+positions shrink when turbulence is expected. This is the practical use of the
+volatility track: it is a risk-control tool, not a directional strategy, and it
+is evaluated on realized volatility control and turnover rather than on PnL.
+"""
+
 import numpy as np
 import pandas as pd
 

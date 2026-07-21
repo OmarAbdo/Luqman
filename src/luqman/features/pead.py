@@ -1,3 +1,12 @@
+"""Post-earnings-announcement drift features.
+
+Mechanism: returns are documented to drift in the direction of an earnings
+surprise for weeks after the announcement.
+
+Status: REJECTED. Built on real actual-vs-estimate earnings data (not a proxy)
+and tested both single-name and cross-sectionally.
+"""
+
 import numpy as np
 import pandas as pd
 

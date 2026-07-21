@@ -1,3 +1,15 @@
+"""LSTM with attention (PyTorch).
+
+Built to answer the question directly rather than by proxy: does a sequence
+model with attention beat a naive baseline on this data?
+
+Result: no. It lost to persistence at 1-, 5- and 20-day horizons, and the gap
+widened with horizon. Together with ridge and gradient boosting failing
+identically, this pointed at the feature set rather than model capacity -- a
+diagnosis later confirmed by a feature audit showing no feature had meaningful
+information content. Kept as the record of that test.
+"""
+
 import numpy as np
 
 

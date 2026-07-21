@@ -1,3 +1,11 @@
+"""Macroeconomic features with an availability lag.
+
+Treasury yields, the yield spread, and the fed funds rate, each lagged one
+trading day so that a value is only used once it could have been observed.
+
+Status: REJECTED, with inconsistent sign across tickers.
+"""
+
 import pandas as pd
 
 

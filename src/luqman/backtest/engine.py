@@ -1,3 +1,16 @@
+"""Single-name costed backtest.
+
+Converts out-of-fold predictions into long/flat or long/short positions and
+charges per-side costs in basis points, reporting total return, annualized
+Sharpe, max drawdown, turnover, trade count, and a buy-and-hold benchmark.
+
+Out-of-fold predictions only. Backtesting in-sample predictions measures how
+well a model memorized the past.
+
+This is the project's final arbiter: a signal with good regression metrics that
+does not survive transaction costs has been disproven, not proven.
+"""
+
 from dataclasses import dataclass, field
 
 import numpy as np

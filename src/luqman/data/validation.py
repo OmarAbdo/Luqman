@@ -1,3 +1,14 @@
+"""Structural validation for daily price data.
+
+Ingest is gated on these rules -- monotonic unique dates, positive prices,
+coherent OHLC relationships, non-negative volume -- plus a business-day gap
+audit that surfaces missing sessions.
+
+The rationale is that the original system silently tolerated malformed data and
+the resulting problems were only discovered much later, as inexplicable model
+behaviour. Validation failures here stop the pipeline instead.
+"""
+
 from dataclasses import dataclass, field
 
 import pandas as pd

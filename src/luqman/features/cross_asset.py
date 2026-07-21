@@ -1,3 +1,14 @@
+"""Cross-asset and geopolitical-proxy features.
+
+Gold-equity divergence (flight to safety), oil shocks, and crypto risk
+appetite, tested as lead-lag signals into equity returns.
+
+Status: all REJECTED. The oil shock showed a real and perfectly sign-consistent
+pattern below the admission bar, so it was followed up with a sharper test
+targeting oil-sensitive names specifically -- which came back weaker and
+sign-inconsistent, closing the question.
+"""
+
 import numpy as np
 import pandas as pd
 

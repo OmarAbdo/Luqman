@@ -1,3 +1,12 @@
+"""Value features (trailing earnings yield).
+
+Status: REJECTED, and strongly wrong-signed. Root-caused rather than left
+unexplained: a bare earnings-yield ranking labels the momentum winners
+"expensive" and genuine value traps "cheap", so it amounted to betting against
+the momentum factor that this project had already proven. Documented in the
+literature as a structural negative correlation between value and momentum.
+"""
+
 import numpy as np
 import pandas as pd
 

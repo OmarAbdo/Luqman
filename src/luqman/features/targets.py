@@ -1,3 +1,14 @@
+"""Prediction targets.
+
+Forward log return (stationary) and its direction label. Never raw price
+levels: at short horizons price is close to a random walk, so a model trained
+on levels minimizes error by echoing the last price -- which is what the
+original system did while appearing to improve.
+
+The final `horizon` rows have no known future and are NaN by construction. They
+must be dropped at alignment time, never filled.
+"""
+
 import numpy as np
 import pandas as pd
 

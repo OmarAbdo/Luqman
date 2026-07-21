@@ -1,3 +1,11 @@
+"""Enforcement harness for the feature admission gates.
+
+Implements the proof standard from `.refactor/dataset-plan.md`: IC thresholds,
+sign consistency, multi-ticker stability, and marginal contribution. A feature
+that does not clear these does not enter the registry, and only registry
+features reach a model.
+"""
+
 from dataclasses import dataclass, field
 
 import pandas as pd

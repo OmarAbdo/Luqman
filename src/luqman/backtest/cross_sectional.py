@@ -1,3 +1,14 @@
+"""Costed long-short portfolio backtest.
+
+Equal-weights the top and bottom quantiles of a factor ranking and charges
+costs on portfolio turnover -- the names that actually changed -- rather than
+on full notional each day.
+
+A long-short book is market-neutral by construction, so it has no natural
+buy-and-hold benchmark. The relevant comparison is against doing nothing, which
+is reported explicitly.
+"""
+
 from dataclasses import dataclass, field
 
 import numpy as np

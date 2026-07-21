@@ -1,3 +1,15 @@
+"""Point-in-time joins for event data.
+
+Maps an event timestamp to the first trading day whose close it could have
+informed. Anything published after the 16:00 ET close belongs to the NEXT
+session, not the current one.
+
+This is the rule that makes every event-derived feature (news, earnings,
+fundamentals) leakage-safe by construction. Without it, a feature can encode
+information that was not public at the time it is used, which produces
+backtest results that cannot be reproduced in live trading.
+"""
+
 import numpy as np
 import pandas as pd
 

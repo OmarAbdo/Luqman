@@ -1,3 +1,12 @@
+"""Company financial statements (Financial Modeling Prep).
+
+Note the free tier caps statement history at 5 periods, so annual reports are
+requested rather than quarterly to maximize the span of year-over-year
+coverage.
+
+Status: features built from this data were REJECTED -- see dataset-plan.md.
+"""
+
 import pandas as pd
 import requests
 

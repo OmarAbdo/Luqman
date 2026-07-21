@@ -1,3 +1,13 @@
+"""Command-line entry point (`luqman ...`).
+
+Each subcommand maps to one `cmd_*` function. Heavy imports (torch, arch,
+fastapi) happen inside those functions rather than at module scope so that
+`luqman --help` stays fast and the optional extras stay optional.
+
+Run `luqman list-features` for the inventory of what is actually proven, and
+see the README for the recommended workflows.
+"""
+
 import argparse
 import sys
 
@@ -426,40 +436,97 @@ def cmd_backtest_vol_sizing(args, settings: Settings) -> int:
     return 0
 
 
-def cmd_backtest_momentum(args, settings: Settings) -> int:
+def _load_universe(settings: Settings) -> dict:
+    """Stored daily data for the defined equity universe, keyed by ticker.
+
+    Deliberately driven by `EQUITY_UNIVERSE` rather than by globbing the store:
+    the store also holds benchmarks and cross-asset instruments (SPY, GLD, USO,
+    BTC-USD), and letting those into an equity cross-sectional ranking would
+    quietly corrupt it.
+    """
+    from .data.store import ParquetStore
+    from .data.universe import EQUITY_UNIVERSE
+    from .data.validation import validate_daily_ohlcv
+
+    store = ParquetStore(settings.data_dir)
+    ohlcv_by_ticker = {}
+    for ticker in EQUITY_UNIVERSE:
+        try:
+            df = store.load_raw(ticker)
+        except FileNotFoundError:
+            continue
+        if validate_daily_ohlcv(df).ok:
+            ohlcv_by_ticker[ticker] = df
+    return ohlcv_by_ticker
+
+
+def cmd_backtest_factor(args, settings: Settings) -> int:
+    """Costed long-short backtest of one admitted cross-sectional factor, or an
+    equal-weight blend of several."""
+    import numpy as np
     import pandas as pd
 
     from .backtest.cross_sectional import backtest_long_short
-    from .data.store import ParquetStore
-    from .data.validation import validate_daily_ohlcv
     from .features.registry import CROSS_SECTIONAL_REGISTRY
     from .features.targets import forward_log_return
 
-    store = ParquetStore(settings.data_dir)
-    factor = CROSS_SECTIONAL_REGISTRY["momentum_12_1_xs"]
+    unknown = [n for n in args.factor if n not in CROSS_SECTIONAL_REGISTRY]
+    if unknown:
+        print(f"Not an admitted factor: {unknown}")
+        print(f"Admitted factors: {list(CROSS_SECTIONAL_REGISTRY)}")
+        print("Rejected candidates are deliberately not runnable here — see .refactor/dataset-plan.md")
+        return 1
 
-    ohlcv_by_ticker = {}
-    for path in sorted(settings.data_dir.glob("raw/*_daily.parquet")):
-        ticker = path.stem.replace("_daily", "")
-        df = store.load_raw(ticker)
-        if validate_daily_ohlcv(df).ok:
-            ohlcv_by_ticker[ticker] = df
+    ohlcv_by_ticker = _load_universe(settings)
+    if not ohlcv_by_ticker:
+        print("No stored daily data. Run: python scripts/fetch_universe.py")
+        return 1
     print(f"Universe: {len(ohlcv_by_ticker)} tickers with valid stored data")
 
-    factor_panel = factor.build(ohlcv_by_ticker)
+    factors = [CROSS_SECTIONAL_REGISTRY[name] for name in args.factor]
+    horizons = {f.horizon for f in factors}
+    if len(horizons) > 1:
+        print(f"Cannot blend factors with different horizons: {[(f.name, f.horizon) for f in factors]}")
+        return 1
+    horizon = horizons.pop()
+
     return_panel = pd.DataFrame(
-        {t: forward_log_return(df["close"], horizon=factor.horizon) for t, df in ohlcv_by_ticker.items()}
+        {t: forward_log_return(df["close"], horizon=horizon) for t, df in ohlcv_by_ticker.items()}
     )
+
+    if len(factors) == 1:
+        factor_panel = factors[0].build(ohlcv_by_ticker)
+        label = factors[0].name
+    else:
+        # Blend by averaging each factor's cross-sectional RANK, not its raw
+        # value: the factors are on entirely different scales (a summed
+        # residual vs a log price ratio), so averaging raw values would let
+        # whichever has the wider spread silently dominate the blend.
+        ranked = []
+        for factor in factors:
+            panel = factor.build(ohlcv_by_ticker)
+            ranked.append(panel.rank(axis=1, pct=True))
+        factor_panel = sum(ranked) / len(ranked)
+        label = " + ".join(f.name for f in factors) + " (equal-weight rank blend)"
 
     result = backtest_long_short(
         factor_panel, return_panel, quantile=args.quantile, cost_bps=args.cost_bps
     )
-    print(f"\n{factor.name} long-short backtest | quantile {args.quantile:.0%} | {args.cost_bps} bps/side turnover cost")
-    print(f"mechanism: {factor.mechanism}")
+    print(
+        f"\n{label} long-short backtest | horizon {horizon}d | "
+        f"quantile {args.quantile:.0%} | {args.cost_bps} bps/side turnover cost"
+    )
+    for factor in factors:
+        print(f"\nmechanism [{factor.name}]: {factor.mechanism}")
+    print()
     for k, v in result.metrics.items():
         print(f"  {k}: {v:+.4f}" if isinstance(v, float) else f"  {k}: {v}")
     print("\nzero_baseline_return: a market-neutral long-short book has no natural buy-and-hold benchmark;")
     print("compare total_return/sharpe against doing nothing (0), not against an index.")
+    print(
+        "NOTE: this rebalances daily against overlapping forward returns, which inflates Sharpe "
+        "via autocorrelation. Figures are comparable across factors here, but not to published values."
+    )
     return 0
 
 
@@ -493,6 +560,81 @@ def cmd_fetch_macro(args, settings: Settings) -> int:
     print(
         f"Stored macro series {list(macro.columns)} "
         f"({macro.index.min():%Y-%m-%d} -> {macro.index.max():%Y-%m-%d}, {len(macro)} rows) -> {path}"
+    )
+    return 0
+
+
+def cmd_serve(args, settings: Settings) -> int:
+    """Run the HTTP API (Phase 8b)."""
+    try:
+        import uvicorn
+    except ModuleNotFoundError:
+        print("The serving extra is not installed. Run: pip install -e '.[serve]'")
+        return 1
+
+    print(f"Luqman API on http://{args.host}:{args.port}  (docs at /docs)")
+    uvicorn.run(
+        "luqman.serving.api:app",
+        host=args.host,
+        port=args.port,
+        reload=args.reload,
+    )
+    return 0
+
+
+def cmd_list_features(args, settings: Settings) -> int:
+    """Print the registry: what is proven, what was tested and rejected, and why.
+
+    This is the project's honest inventory. Everything in the admitted lists
+    cleared the full proof standard recorded in `.refactor/dataset-plan.md`;
+    everything in the rejected list is kept so the same ground is not retested
+    by accident, and so the ratio of tried-to-proven stays visible.
+    """
+    from .features.registry import (
+        CROSS_SECTIONAL_REGISTRY,
+        REGISTRY,
+        REJECTED_CROSS_SECTIONAL_CANDIDATES,
+    )
+
+    print("=== ADMITTED single-ticker features ===")
+    for feature in REGISTRY.values():
+        print(
+            f"\n  {feature.name}  [{feature.category}, predicts {feature.target_kind}, "
+            f"horizon {feature.horizon}d, proof: {feature.proof_run}]"
+        )
+        print(f"    {feature.mechanism}")
+
+    print("\n\n=== ADMITTED cross-sectional factors (need the whole universe) ===")
+    for factor in CROSS_SECTIONAL_REGISTRY.values():
+        print(
+            f"\n  {factor.name}  [{factor.category}, horizon {factor.horizon}d, "
+            f"proof: {factor.proof_run}]"
+        )
+        print(f"    {factor.mechanism}")
+
+    print("\n\n=== TESTED AND REJECTED (recorded so they are not retried blindly) ===")
+    for factor in REJECTED_CROSS_SECTIONAL_CANDIDATES.values():
+        print(f"\n  {factor.name}")
+        print(f"    {factor.mechanism}")
+
+    print("\n\nFull proof numbers and methodology: .refactor/dataset-plan.md")
+    return 0
+
+
+def cmd_fetch_factors(args, settings: Settings) -> int:
+    from .data.fama_french import fetch_ff_daily_factors
+    from .data.store import ParquetStore
+
+    factors = fetch_ff_daily_factors()
+    path = ParquetStore(settings.data_dir).save_table("ff_factors_daily", factors)
+    print(
+        f"Stored Fama-French daily factors {list(factors.columns)} "
+        f"({factors.index.min():%Y-%m-%d} -> {factors.index.max():%Y-%m-%d}, "
+        f"{len(factors)} rows) -> {path}"
+    )
+    print(
+        "Note: the French library publishes with a lag of a few weeks, so the "
+        "last available factor date will trail today's price data."
     )
     return 0
 
@@ -538,6 +680,12 @@ def main(argv=None) -> int:
 
     p_macro = sub.add_parser("fetch-macro", help="Fetch daily macro series (Alpha Vantage)")
     p_macro.set_defaults(func=cmd_fetch_macro)
+
+    p_factors = sub.add_parser(
+        "fetch-factors",
+        help="Fetch daily Fama-French 3-factor returns (needed for residual features)",
+    )
+    p_factors.set_defaults(func=cmd_fetch_factors)
 
     p_bt = sub.add_parser("backtest", help="Costed backtest of out-of-fold predictions")
     p_bt.add_argument("--ticker", default=None)
@@ -591,15 +739,35 @@ def main(argv=None) -> int:
     p_vol_bt.add_argument("--cost-bps", type=float, default=5.0)
     p_vol_bt.set_defaults(func=cmd_backtest_vol_sizing)
 
-    p_mom_bt = sub.add_parser(
-        "backtest-momentum",
-        help="Costed long-short momentum_12_1 backtest across all stored tickers",
+    p_factor_bt = sub.add_parser(
+        "backtest-factor",
+        help="Costed long-short backtest of admitted cross-sectional factor(s); "
+             "pass --factor twice to test an equal-weight blend",
     )
-    p_mom_bt.add_argument("--quantile", type=float, default=0.2)
-    p_mom_bt.add_argument("--cost-bps", type=float, default=10.0)
-    p_mom_bt.set_defaults(func=cmd_backtest_momentum)
+    p_factor_bt.add_argument(
+        "--factor",
+        action="append",
+        default=None,
+        help="Admitted factor name (repeatable). Default: momentum_12_1_xs",
+    )
+    p_factor_bt.add_argument("--quantile", type=float, default=0.2)
+    p_factor_bt.add_argument("--cost-bps", type=float, default=10.0)
+    p_factor_bt.set_defaults(func=cmd_backtest_factor)
+
+    p_factors_ls = sub.add_parser(
+        "list-features", help="Show every admitted feature/factor and its proof run"
+    )
+    p_factors_ls.set_defaults(func=cmd_list_features)
+
+    p_serve = sub.add_parser("serve", help="Run the HTTP API (docs at /docs)")
+    p_serve.add_argument("--host", default="127.0.0.1")
+    p_serve.add_argument("--port", type=int, default=8000)
+    p_serve.add_argument("--reload", action="store_true", help="Auto-reload on code changes")
+    p_serve.set_defaults(func=cmd_serve)
 
     args = parser.parse_args(argv)
+    if args.command == "backtest-factor" and getattr(args, "factor", None) is None:
+        args.factor = ["momentum_12_1_xs"]
     return args.func(args, Settings.load())
 
 
